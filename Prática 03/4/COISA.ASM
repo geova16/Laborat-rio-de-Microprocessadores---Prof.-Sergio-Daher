@@ -27,7 +27,7 @@ INI:
 
     ; Configuração do módulo USART para transmissão serial
     BANKSEL SPBRG         ; Seleciona o registrador SPBRG
-    movlw .64             ; Define a taxa de baud (63 para 9600 bps com Fosc = 10 MHz)
+    movlw .63             ; Define a taxa de baud (63 para 9600 bps com Fosc = 10 MHz)
     movwf SPBRG           ; Escreve o valor em SPBRG
     BANKSEL TXSTA         ; Seleciona o registrador TXSTA
     bsf  TXSTA,TXEN       ; Habilita o módulo de transmissão (TX)
@@ -49,7 +49,7 @@ INI:
 MAIN:
     ; Verifica o estado do botão (RB0)
     BANKSEL PORTB         ; Seleciona o banco para acessar PORTB
-    btss PORTB, 0         ; Testa o bit RB0 (se RB0 = 1, salta para send_X)
+    BTSS PORTB, 0         ; Testa o bit RB0 (se RB0 = 1, salta para send_X)
     goto send_A           ; Se RB0 = 0, envia 'A'
 
 send_X:
@@ -70,7 +70,7 @@ send_char:
 
     ; Envia o caractere armazenado em char_to_send
     BANKSEL TXREG         ; Seleciona o registrador TXREG
-    movf char_to_send, W  ; Move o valor de char_to_send para W
+    MOVF char_to_send, W  ; Move o valor de char_to_send para W
     MOVWF TXREG           ; Escreve o valor no registrador TXREG para transmissão
 
     GOTO MAIN             ; Retorna para o início do laço principal
