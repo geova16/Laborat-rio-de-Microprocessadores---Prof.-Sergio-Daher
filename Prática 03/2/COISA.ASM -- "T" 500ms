@@ -1,0 +1,71 @@
+#include <P16F628A.INC>  ; Inclui a biblioteca específica para o microcontrolador PIC16F628A
+
+; Declaração de registradores de uso geral (variáveis do programa)
+at_x        EQU   0x70  ; Registrador para contagem externa no atraso
+at_tmp1     EQU   0x71  ; Registrador temporário 1 para o loop de atraso
+at_tmp2     EQU   0x72  ; Registrador temporário 2 para o loop de atraso
+
+; Vetor de reset e interrupção
+    ORG 0                 ; Define o endereço inicial de reset
+    GOTO INI              ; Vai para o código de inicialização (INI)
+
+    ORG 4                 ; Define o endereço inicial para interrupções
+    RETFIE                ; Retorna da interrupção e reabilita as interrupções
+
+; Rotina de inicialização
+INI:
+    BANKSEL OPTION_REG    ; Seleciona o banco de memória que contém o registrador OPTION_REG
+    movlw   0x80          ; Configura o OPTION_REG para desabilitar o pull-up interno e ativar o timer0 com prescaler
+    movwf   OPTION_REG    ; Escreve o valor em OPTION_REG
+
+    BANKSEL TRISA         ; Seleciona o banco que contém o registrador TRISA
+    movlw 0x00            ; Configura os pinos de PORTA como saída
+    movwf TRISA           ; Escreve o valor em TRISA
+    movlw 0xFF            ; Configura os pinos de PORTB como entrada
+    movwf TRISB           ; Escreve o valor em TRISB
+
+    ; Configuração do módulo USART para transmissão serial
+    BANKSEL SPBRG         ; Seleciona o registrador SPBRG
+    movlw .64             ; Define a taxa de baud (64 para 9600 bps com Fosc = 10 MHz)
+    movwf SPBRG           ; Escreve o valor em SPBRG
+    BANKSEL TXSTA         ; Seleciona o registrador TXSTA
+    bsf  TXSTA,TXEN       ; Habilita o módulo de transmissão (TX)
+    bsf  TXSTA,BRGH       ; Configura a alta velocidade de transmissão
+    BANKSEL RCSTA         ; Seleciona o registrador RCSTA
+    bsf  RCSTA,SPEN       ; Habilita o módulo serial (USART)
+    bsf  RCSTA,CREN       ; Habilita o recebimento contínuo
+
+    ; Configuração inicial de interrupções
+    BANKSEL INTCON        ; Seleciona o registrador INTCON
+    movlw 0x00            ; Desabilita todas as interrupções
+    movwf INTCON          ; Escreve o valor em INTCON
+
+MAIN:
+    ; Laço principal
+    MOVLW .110            ; Define o tempo de atraso base
+    CALL atraso           ; Chama a sub-rotina de atraso (500 ms)
+
+    ; Envia o caractere 'T' via transmissão serial
+    BANKSEL TXREG         ; Seleciona o registrador TXREG
+    MOVLW 0x54            ; Carrega o valor ASCII de 'T' (0x54) no W
+    MOVWF TXREG           ; Escreve o valor no registrador TXREG para transmissão
+
+    GOTO MAIN             ; Retorna para o início do laço principal
+
+; Sub-rotina de atraso (500 ms)
+; Ajusta os valores para alcançar aproximadamente 500 ms de atraso
+atraso
+        movwf   at_x       ; Armazena o valor inicial de W no registrador at_x
+        movlw   .250       ; Define o loop externo para gerar 500 ms
+
+at1:    movwf   at_tmp1    ; Inicializa o temporário 1
+at2:    movwf   at_tmp2    ; Inicializa o temporário 2
+at3:    decfsz  at_tmp2    ; Decrementa at_tmp2, verifica se é zero
+        goto    at3        ; Continua o loop interno se não for zero
+        decfsz  at_tmp1    ; Decrementa at_tmp1, verifica se é zero
+        goto    at2        ; Continua o loop intermediário se não for zero
+        decfsz  at_x       ; Decrementa at_x, verifica se é zero
+        goto    at1        ; Continua o loop externo se não for zero
+        return             ; Retorna para o chamador quando o atraso terminar
+
+END                        ; Indica o fim do código
