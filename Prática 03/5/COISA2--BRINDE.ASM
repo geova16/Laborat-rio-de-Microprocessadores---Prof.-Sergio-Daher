@@ -1,8 +1,8 @@
 #include <P16F628A.INC>  ; Inclui a biblioteca específica para o microcontrolador PIC16F628A
 
 ; Definições de LEDs
-#DEFINE LED1   PORTB,1     ; Define LED1 no pino RB1
-#DEFINE LED2   PORTB,2     ; Define LED2 no pino RB2
+#DEFINE LED1   PORTB, 6     ; Define LED1 no pino RB1
+#DEFINE LED2   PORTB, 7    ; Define LED2 no pino RB2
 
 ; Variáveis de uso geral
 at_x        EQU   0x70     ; Registrador para contagem externa no atraso
@@ -55,20 +55,20 @@ MAIN:
     BANKSEL TXREG
     MOVLW 0x41            ; Carrega o valor ASCII de 'A' (caractere 'A')
     MOVWF TXREG           ; Envia o caractere via USART
-
+    
     ; Verifica se há dados recebidos
     BANKSEL PIR1          ; Seleciona PIR1 para verificar RCIF
     BTFSC PIR1, RCIF      ; Verifica se há dados no registrador RCREG
     CALL rec_e_trata      ; Chama a rotina para tratar o caractere recebido
-
+    
     GOTO MAIN             ; Retorna ao loop principal
-
+    
 ; Rotina de recepção e tratamento de caracteres recebidos
 rec_e_trata:
     BANKSEL RCREG
     MOVFW RCREG           ; Lê o caractere recebido no registrador RCREG
     BANKSEL PORTB         ; Seleciona PORTB para manipulação de LEDs
-
+    
     ; Verifica e trata o caractere recebido
     movwf temp            ; Salva o caractere em temp
     sublw 'f'             ; Compara com 'f'
