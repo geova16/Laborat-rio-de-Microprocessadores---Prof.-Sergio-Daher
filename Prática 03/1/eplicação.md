@@ -20,3 +20,10 @@ No código fornecido:
 ```assembly
 movlw .64
 movwf SPBRG
+```
+
+###2. Configuração do Registro TXSTA
+O registro TXSTA configura a transmissão. No código fornecido:
+
+#### BRGH (bit 2):
+
