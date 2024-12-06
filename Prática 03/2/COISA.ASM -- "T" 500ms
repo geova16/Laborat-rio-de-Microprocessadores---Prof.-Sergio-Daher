@@ -42,7 +42,7 @@ INI:
 
 MAIN:
     ; Laço principal
-    MOVLW .110            ; Define o tempo de atraso base
+    MOVLW .220            ; Define o tempo de atraso base
     CALL atraso           ; Chama a sub-rotina de atraso (500 ms)
 
     ; Envia o caractere 'T' via transmissão serial
@@ -56,7 +56,7 @@ MAIN:
 ; Ajusta os valores para alcançar aproximadamente 500 ms de atraso
 atraso
         movwf   at_x       ; Armazena o valor inicial de W no registrador at_x
-        movlw   .250       ; Define o loop externo para gerar 500 ms
+        movlw   .40       ; Define o loop externo para gerar 500 ms
 
 at1:    movwf   at_tmp1    ; Inicializa o temporário 1
 at2:    movwf   at_tmp2    ; Inicializa o temporário 2
