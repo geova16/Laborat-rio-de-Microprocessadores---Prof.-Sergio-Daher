@@ -12,7 +12,8 @@
 ### Sub-rotina `atraso`
 1. **Loop Interno (at2):**
    - Executa 100 iterações, cada uma consumindo 3 ciclos.
-   - 
+   - `decfsz` Y: 1 ciclo (quando 𝑌 ≠ 0)
+   - `goto` at2: 2 ciclos.
    - Tempo total: T_at2 = 100 * 3 * T_ciclo = 1.2 ms.
 
 2. **Loop Externo (at1):**
