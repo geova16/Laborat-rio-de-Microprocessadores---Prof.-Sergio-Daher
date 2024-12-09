@@ -44,12 +44,12 @@ INI:
     ; Inicializa o caractere a ser enviado como 'A'
     BANKSEL letra_enviada
     movlw 0x41            ; Carrega o valor ASCII de 'A' no W
-    movwf letra_enviada    ; Salva o caractere inicial em char_to_send
+    movwf letra_enviada    ; Salva o caractere inicial em letra_enviada
 
 MAIN:
     ; Verifica o estado do botão (RA0)
     BANKSEL PORTA         ; Seleciona o banco para acessar PORTB
-    BTFSS PORTA, 0         ; Testa o bit RA0 (se RA0 = 1, salta para send_X)
+    BTFSS PORTA, 0         ; Testa o bit RA0 (se RA0 = 1, salta para envia_X)
     goto envia_A           ; Se RB0 = 0, envia 'A'
 
 envia_X:
