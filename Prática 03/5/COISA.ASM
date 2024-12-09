@@ -27,7 +27,7 @@ INI:
 
     ; Configuração do módulo USART para transmissão serial
     BANKSEL SPBRG         ; Seleciona o registrador SPBRG
-    movlw .63             ; Define a taxa de baud (63 para 9600 bps com Fosc = 10 MHz)
+    movlw .64             ; Define a taxa de baud (64 para 9600 bps com Fosc = 10 MHz)
     movwf SPBRG           ; Escreve o valor em SPBRG
     BANKSEL TXSTA         ; Seleciona o registrador TXSTA
     bsf  TXSTA,TXEN       ; Habilita o módulo de transmissão (TX)
