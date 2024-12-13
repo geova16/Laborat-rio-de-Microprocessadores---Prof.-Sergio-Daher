@@ -53,7 +53,6 @@ MAIN:
 ; Sub-rotina para o sentido 1
 ;-----------------------------------------
 sentido_1:
-  MOVLW B'00000000'
   
   MOVLW B'00001001'      ; Define o padrão 0x09 (passo 1)
   CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
@@ -73,11 +72,6 @@ sentido_1:
 ; Sub-rotina para o sentido 2
 ;-----------------------------------------
 sentido_2:
-    
-  MOVLW B'00000000'
-  
-  MOVLW B'00001100'      ; Define o padrão 0x0C (passo 4)
-  CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
 
   MOVLW B'00000110'      ; Define o padrão 0x06 (passo 3)
   CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
@@ -86,6 +80,9 @@ sentido_2:
   CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
 
   MOVLW B'00001001'      ; Define o padrão 0x09 (passo 1)
+  CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
+  
+  MOVLW B'00001100'      ; Define o padrão 0x0C (passo 4)
   CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
 
   RETURN                 ; Retorna ao programa principal
