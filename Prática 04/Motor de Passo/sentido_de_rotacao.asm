@@ -4,6 +4,7 @@
 at_x       EQU   0x70     ; Registrador para o contador externo do atraso
 at_tmp1    EQU   0x71     ; Registrador para o contador interno do atraso
 at_tmp2    EQU   0x72     ; Registrador para o contador mais interno do atraso
+sentido    EQU   0x73     ; Registrador para armazenar o sentido do motor
 
 ;-----------------------------------------
 ; Vetores de Reset e Interrupção
@@ -23,31 +24,37 @@ INICIO:
       MOVLW 0x00         ; Configura todos os pinos de PORTA como saída (TRISA = 0x00)
       MOVWF TRISA        ; Escreve o valor no registrador TRISA
 
-      ; Configura o módulo CCP1 para PWM
-      BANKSEL CCP1CON    ; Seleciona o banco de memória para acessar CCP1CON
-      MOVLW 0x0C         ; Configura o CCP1 no modo PWM (0x0C)
-      MOVWF CCP1CON      ; Escreve o valor no registrador CCP1CON
+      ; Configura o PORTB como entrada
+      BANKSEL TRISB      ; Seleciona o banco de memória para acessar TRISB
+      MOVLW 0xFF         ; Configura todos os pinos de PORTB como entrada (TRISB = 0xFF)
+      MOVWF TRISB        ; Escreve o valor no registrador TRISB
 
-      ; Configura o registrador PR2 para o período do PWM
-      BANKSEL PR2        ; Seleciona o banco de memória para acessar PR2
-      MOVLW 0x80         ; Define o período do PWM (PR2 = 0x80)
-      MOVWF PR2          ; Escreve o valor no registrador PR2
-
-      ; Configura o registrador CCPR1L para o duty cycle do PWM
-      BANKSEL CCPR1L     ; Seleciona o banco de memória para acessar CCPR1L
-      MOVLW 0x60         ; Define o duty cycle do PWM (CCPR1L = 0x60)
-      MOVWF CCPR1L       ; Escreve o valor no registrador CCPR1L
-
-      ; Configura o Timer2 para ativar o PWM
-      BANKSEL T2CON      ; Seleciona o banco de memória para acessar T2CON
-      MOVLW 0x04         ; Configura o Timer2 com prescaler = 1 (T2CON = 0x04)
-      MOVWF T2CON        ; Escreve o valor no registrador T2CON
+      ; Inicializa o registrador de sentido
+      BANKSEL sentido    ; Seleciona o banco de memória para acessar o registrador sentido
+      CLRF sentido       ; Inicializa o sentido como 0 (giro em um sentido padrão)
 
 ;-----------------------------------------
 ; Programa Principal
 ;-----------------------------------------
 MAIN:
-  ; Envia padrões de controle para PORTA (motor de passo, por exemplo)
+  ; Verifica o estado do botão em RB0
+  BANKSEL PORTB          ; Seleciona o banco de memória para acessar PORTB
+
+  BTFSS PORTB, 0         ; Testa o bit 0 de PORTB 
+  CALL sentido_1         ; Chama a rotina para o sentido 1
+
+  BTFSC PORTB, 0
+  CALL sentido_2         ; Chama a rotina para o sentido 2
+
+  GOTO MAIN              ; Volta ao início do programa principal (loop infinito)
+
+
+;-----------------------------------------
+; Sub-rotina para o sentido 1
+;-----------------------------------------
+sentido_1:
+  MOVLW B'00000000'
+  
   MOVLW B'00001001'      ; Define o padrão 0x09 (passo 1)
   CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
 
@@ -60,7 +67,28 @@ MAIN:
   MOVLW B'00001100'      ; Define o padrão 0x0C (passo 4)
   CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
 
-  GOTO MAIN              ; Volta ao início do programa principal (loop infinito)
+  RETURN                 ; Retorna ao programa principal
+
+;-----------------------------------------
+; Sub-rotina para o sentido 2
+;-----------------------------------------
+sentido_2:
+    
+  MOVLW B'00000000'
+  
+  MOVLW B'00001100'      ; Define o padrão 0x0C (passo 4)
+  CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
+
+  MOVLW B'00000110'      ; Define o padrão 0x06 (passo 3)
+  CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
+
+  MOVLW B'00000011'      ; Define o padrão 0x03 (passo 2)
+  CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
+
+  MOVLW B'00001001'      ; Define o padrão 0x09 (passo 1)
+  CALL passo             ; Chama a sub-rotina para aplicar o padrão e realizar o atraso
+
+  RETURN                 ; Retorna ao programa principal
 
 ;-----------------------------------------
 ; Sub-rotina 'passo': Envia o padrão para PORTA e realiza atraso
