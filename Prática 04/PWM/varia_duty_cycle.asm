@@ -80,19 +80,19 @@ MAIN:
 ; Configuração do Duty Cycle
 ;-----------------------------------------
 duty_20:
-    MOVLW d'12'          ; Duty cycle de 20%
+    MOVLW d'25'          ; Duty cycle de 20%
     GOTO pwm
 
 duty_40:
-    MOVLW d'25'         ; Duty cycle de 40%
+    MOVLW d'51'         ; Duty cycle de 40%
     GOTO pwm
 
 duty_60:
-    MOVLW d'38'         ; Duty cycle de 60%
+    MOVLW d'76'         ; Duty cycle de 60%
     GOTO pwm
 
 duty_80:
-    MOVLW d'51'         ; Duty cycle de 80%
+    MOVLW d'102'         ; Duty cycle de 80%
     GOTO pwm
 
 pwm:
