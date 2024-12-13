@@ -1,113 +1,103 @@
-#include <P16F628A.INC>  ; Inclui a biblioteca específica para o microcontrolador PIC16F628A
+#INCLUDE <P16F628A.INC>
 
-; Definições de LEDs
-#DEFINE LED1   PORTB, 6     ; Define LED1 no pino RB1
-#DEFINE LED2   PORTB, 7    ; Define LED2 no pino RB2
+#DEFINE LED1   PORTB,6                             
+#DEFINE LED2   PORTB,7                             
 
-; Variáveis de uso geral
-at_x        EQU   0x70     ; Registrador para contagem externa no atraso
-at_tmp1     EQU   0x71     ; Registrador temporário 1
-at_tmp2     EQU   0x72     ; Registrador temporário 2
-temp        EQU   0x74     ; Registrador para armazenar o caractere recebido
+at_x        EQU   0x70
+at_tmp1     EQU   0x71
+at_tmp2     EQU   0x72
 
-; Vetores de inicialização e interrupção
-    ORG 0                 ; Define o endereço de reset
-    GOTO INI              ; Vai para a rotina de inicialização
+temp        EQU   0x74
 
-    ORG 4                 ; Define o endereço para interrupções
-    RETFIE                ; Retorna de uma interrupção e habilita interrupções
+	ORG 0
+    GOTO INI
 
-; Rotina de inicialização
+	ORG 4
+	RETFIE
+
+
 INI:
     BANKSEL OPTION_REG
-    movlw   0x80
-    movwf   OPTION_REG    ; Desabilita pull-ups e configura prescaler no Timer0
+	movlw   0x80
+	movwf	OPTION_REG
 
-    ; Configuração dos registradores de direção dos pinos
     BANKSEL TRISA
-    movlw   0x00          ; Configura PORTA como saída
-    movwf   TRISA
-    movlw   0x3F          ; Configura RB0 a RB5 como entrada e RB6/RB7 como saída
-    movwf   TRISB
+    movlw 0x00
+    movwf TRISA
+    movlw 0x3F
+    movwf TRISB
 
-    ; Configuração do módulo USART para comunicação serial
+
     BANKSEL SPBRG
-    movlw .64             ; Configura taxa de baud (64 para 9600 bps com Fosc = 10 MHz)
+    movlw .64
     movwf SPBRG
     BANKSEL TXSTA
-    bsf TXSTA, TXEN       ; Habilita transmissão
-    bsf TXSTA, BRGH       ; Configura alta velocidade
+    bsf  TXSTA,TXEN     
+    bsf  TXSTA,BRGH     
     BANKSEL RCSTA
-    bsf RCSTA, SPEN       ; Habilita a porta serial (USART)
-    bsf RCSTA, CREN       ; Habilita recepção contínua
+    bsf  RCSTA,SPEN     
+    bsf  RCSTA,CREN     
 
-    ; Desabilita interrupções
     BANKSEL INTCON
     movlw 0x00
     movwf INTCON
 
 MAIN:
-    ; Atraso antes de transmitir
-    MOVLW 0x01            ; Define o tempo de atraso
-    CALL atraso           ; Chama a rotina de atraso
 
-    ; Transmite o caractere 'A'
+ 	MOVFW 0x01									  ; W = tempo de atraso
+ 	CALL  atraso								  ; chama a funcao atraso 
+
     BANKSEL TXREG
-    MOVLW 0x41            ; Carrega o valor ASCII de 'A' (caractere 'A')
-    MOVWF TXREG           ; Envia o caractere via USART
-    
-    ; Verifica se há dados recebidos
-    BANKSEL PIR1          ; Seleciona PIR1 para verificar RCIF
-    BTFSC PIR1, RCIF      ; Verifica se há dados no registrador RCREG
-    CALL rec_e_trata      ; Chama a rotina para tratar o caractere recebido
-    
-    GOTO MAIN             ; Retorna ao loop principal
-    
-; Rotina de recepção e tratamento de caracteres recebidos
-rec_e_trata:
-    BANKSEL RCREG
-    MOVFW RCREG           ; Lê o caractere recebido no registrador RCREG
-    BANKSEL PORTB         ; Seleciona PORTB para manipulação de LEDs
-    
-    ; Verifica e trata o caractere recebido
-    movwf temp            ; Salva o caractere em temp
-    sublw 'f'             ; Compara com 'f'
-    btfsc STATUS, Z       ; Se igual, flag Z é setado
-    BCF LED1              ; Desliga LED1 se o caractere for 'f'
-    
-    movfw temp            ; Recarrega o valor recebido
-    sublw 'g'             ; Compara com 'g'
-    btfsc STATUS, Z       ; Se igual, flag Z é setado
-    BSF LED1              ; Liga LED1 se o caractere for 'g'
-    
-    movfw temp            ; Recarrega o valor recebido
-    sublw 'y'             ; Compara com 'y'
-    btfsc STATUS, Z       ; Se igual, flag Z é setado
-    BCF LED2              ; Desliga LED2 se o caractere for 'y'
-    
-    movfw temp            ; Recarrega o valor recebido
-    sublw 'm'             ; Compara com 'm'
-    btfsc STATUS, Z       ; Se igual, flag Z é setado
-    BSF LED2              ; Liga LED2 se o caractere for 'm'
+ 	MOVLW 0x41
+ 	MOVWF TXREG
 
-    RETURN                ; Retorna ao loop principal
+    BANKSEL PIR1
+ 	BTFSC PIR1,RCIF
+ 	CALL  rec_e_trata
 
-; Rotina de atraso
-atraso:
-    movwf   at_x          ; Armazena o valor inicial no registrador at_x
-    movlw   0x10          ; Define o valor para o loop externo
+	GOTO MAIN
+;==========================================
+;==========================================
+rec_e_trata
+    	BANKSEL RCREG
+        movfw RCREG
 
-at1:
-    movwf   at_tmp1       ; Inicializa o temporário 1
-at2:
-    movwf   at_tmp2       ; Inicializa o temporário 2
-at3:
-    decfsz  at_tmp2       ; Decrementa at_tmp2 e verifica se é zero
-    goto    at3           ; Continua o loop interno se não for zero
-    decfsz  at_tmp1       ; Decrementa at_tmp1 e verifica se é zero
-    goto    at2           ; Continua o loop intermediário se não for zero
-    decfsz  at_x          ; Decrementa at_x e verifica se é zero
-    goto    at1           ; Continua o loop externo se não for zero
-    RETURN                ; Retorna ao chamador quando o atraso terminar
+    	BANKSEL PORTB
+    	movwf temp
+    	sublw 'A'
+    	btfsc STATUS,Z
+        BCF   LED1
+    	movfw temp
+    	sublw 'Z'
+    	btfsc STATUS,Z
+    	BSF   LED1
 
-END                       ; Fim do programa
+    	movfw temp
+    	sublw 'S'
+    	btfsc STATUS,Z
+        BCF   LED2
+    	movfw temp
+    	sublw 'X'
+    	btfsc STATUS,Z
+    	BSF   LED2
+
+		return
+;==========================================
+;==========================================
+atraso
+        movwf   at_x 
+ 	    movlw   0x10
+
+at1:    movwf   at_tmp1
+at2:    movwf   at_tmp2
+at3:    decfsz  at_tmp2
+        goto    at3
+        decfsz  at_tmp1
+        goto    at2
+        decfsz  at_x
+        goto    at1
+        return
+;==========================================
+;==========================================
+
+END
