@@ -23,26 +23,6 @@ INICIO:
       MOVLW 0x00         ; Configura todos os pinos de PORTA como saída (TRISA = 0x00)
       MOVWF TRISA        ; Escreve o valor no registrador TRISA
 
-      ; Configura o módulo CCP1 para PWM
-      BANKSEL CCP1CON    ; Seleciona o banco de memória para acessar CCP1CON
-      MOVLW 0x0C         ; Configura o CCP1 no modo PWM (0x0C)
-      MOVWF CCP1CON      ; Escreve o valor no registrador CCP1CON
-
-      ; Configura o registrador PR2 para o período do PWM
-      BANKSEL PR2        ; Seleciona o banco de memória para acessar PR2
-      MOVLW 0x80         ; Define o período do PWM (PR2 = 0x80)
-      MOVWF PR2          ; Escreve o valor no registrador PR2
-
-      ; Configura o registrador CCPR1L para o duty cycle do PWM
-      BANKSEL CCPR1L     ; Seleciona o banco de memória para acessar CCPR1L
-      MOVLW 0x60         ; Define o duty cycle do PWM (CCPR1L = 0x60)
-      MOVWF CCPR1L       ; Escreve o valor no registrador CCPR1L
-
-      ; Configura o Timer2 para ativar o PWM
-      BANKSEL T2CON      ; Seleciona o banco de memória para acessar T2CON
-      MOVLW 0x04         ; Configura o Timer2 com prescaler = 1 (T2CON = 0x04)
-      MOVWF T2CON        ; Escreve o valor no registrador T2CON
-
 ;-----------------------------------------
 ; Programa Principal
 ;-----------------------------------------
