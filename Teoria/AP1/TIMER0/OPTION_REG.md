@@ -1,4 +1,3 @@
-```markdown
 # Registrador OPTION_REG - Timer 0
 
 O **OPTION_REG** é um registrador especial utilizado na configuração do **Timer 0** e outras funções de controle nos microcontroladores da família PIC16. Este registrador é composto por 8 bits, onde cada bit possui uma função específica.
@@ -56,8 +55,8 @@ Os bits PS2, PS1 e PS0 determinam o fator de divisão do prescaler, conforme a t
 
 ### Código Assembly
 ```assembly
-    MOVLW b'00000110'   ; RBPU = 0, INTEDG = 0, T0CS = 0, T0SE = 0, PSA = 0, PS2:PS0 = 110 (1:8)
-    OPTION             ; Carrega o valor no registrador OPTION_REG
+MOVLW b'00000110'   ; RBPU = 0, INTEDG = 0, T0CS = 0, T0SE = 0, PSA = 0, PS2:PS0 = 110 (1:8)
+OPTION             ; Carrega o valor no registrador OPTION_REG
 ```
 
 ### Explicação do Código
@@ -70,4 +69,3 @@ Os bits PS2, PS1 e PS0 determinam o fator de divisão do prescaler, conforme a t
 
 ## Referência
 Consulte o **datasheet** do microcontrolador PIC16 correspondente para mais detalhes sobre o registrador OPTION_REG e suas funcionalidades.
-```
