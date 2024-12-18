@@ -45,6 +45,16 @@ O tempo de interrupção ocorre quando o Timer0 faz um overflow (atinge 255 e re
 
 ---
 
+## Resumo
+
+```
+
+T_int = [ 4 * Prescaler (256 - Valor_Inicial) ] / Fosc
+
+```
+
+---
+
 ## Exemplo Prático
 
 ### **Dados:**
