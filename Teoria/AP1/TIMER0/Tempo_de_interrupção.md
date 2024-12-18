@@ -45,21 +45,11 @@ O tempo de interrupção ocorre quando o Timer0 faz um overflow (atinge 255 e re
 
 ---
 
-## Resumo
-
-```
-
-T_int = [ 4 * Prescaler (256 - Valor_Inicial) ] / Fosc
-
-```
-
----
-
 ## Exemplo Prático
 
 ### **Dados:**
 - Clock do sistema: **4 MHz** (`f_osc`).
-- Prescaler: **1:8**.
+- Prescaler: **1:256**.
 - Valor inicial do Timer0: **0**.
 
 ### **Cálculo:**
@@ -67,22 +57,34 @@ T_int = [ 4 * Prescaler (256 - Valor_Inicial) ] / Fosc
 1. **Frequência do Timer0:**
 ```
     f_timer = f_osc / (4 * Prescaler)
-    f_timer = 4,000,000 / (4 * 8) = 125,000 Hz
+    f_timer = 4,000,000 / (4 * 256) = 3,906.25 Hz
 ```
 
 2. **Período do Timer0:**
 ```
     T_timer = 1 / f_timer
-    T_timer = 1 / 125,000 = 8 µs
+    T_timer = 1 / 3,906.25 = 0.000256 s = 256 µs
 ```
 
 3. **Tempo de Interrupção:**
 ```
     T_int = T_timer * (256 - Valor_Inicial)
-    T_int = 8 µs * 256 = 2,048 ms
+    T_int = 256 µs * 256 = 65.536 ms
 ```
 
-O tempo de interrupção será **2,048 ms** se o Timer0 iniciar em 0.
+O tempo de interrupção será **65,536 ms** se o Timer0 iniciar em 0.
+
+---
+
+### **Cálculo de Interrupções em 1 Segundo**
+Para determinar quantas interrupções ocorrem em 1 segundo, basta dividir 1 segundo pelo tempo de uma interrupção:
+
+```
+    Número de Interrupções = 1 / T_int
+    Número de Interrupções = 1 / 0.065536 ≈ 15.26
+```
+
+O Timer0 gera aproximadamente **15 interrupções por segundo** com estas configurações.
 
 ---
 
@@ -91,11 +93,18 @@ Se o Timer0 iniciar com um valor diferente de 0 (ex.: 100):
 
 ```
     T_int = T_timer * (256 - Valor_Inicial)
-    T_int = 8 µs * (256 - 100)
-    T_int = 8 µs * 156 = 1,248 ms
+    T_int = 256 µs * (256 - 100)
+    T_int = 256 µs * 156 = 39.936 ms
 ```
 
-O tempo de interrupção será **1,248 ms**.
+O tempo de interrupção será **39,936 ms**, e o número de interrupções por segundo será:
+
+```
+    Número de Interrupções = 1 / T_int
+    Número de Interrupções = 1 / 0.039936 ≈ 25.04
+```
+
+O Timer0 gera aproximadamente **25 interrupções por segundo** com um valor inicial de 100.
 
 ---
 
@@ -104,6 +113,12 @@ Para qualquer configuração do Timer0, a fórmula do tempo de interrupção é:
 
 ```
     T_int = (1 / (f_osc / (4 * Prescaler))) * (256 - Valor_Inicial)
+```
+
+E o número de interrupções por segundo é dado por:
+
+```
+    Número de Interrupções = 1 / T_int
 ```
 
 ---
