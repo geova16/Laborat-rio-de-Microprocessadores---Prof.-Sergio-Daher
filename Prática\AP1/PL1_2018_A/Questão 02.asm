@@ -17,6 +17,7 @@
 ;------------------------------------------
     cblock  0x20                   ; Início da RAM para variáveis
         duty_cycle                ; Duty cycle atual (em passos de 10%)
+        TEMP1                     ; Temporário para atraso
     endc
 
 ;------------------------------------------
@@ -34,16 +35,18 @@ Start:
     movlw   0x01                  ; Configura RB0 como entrada e restante como saída
     movwf   TRISB
 
+    banksel T2CON
     movlw   b'00000100'           ; Configura Timer2: Prescaler 1:4
     movwf   T2CON                 ; Timer2 ligado
 
     movlw   0x7C                  ; Configura PR2 para definir o período
                                    ; Período PWM = [(PR2) + 1] * 4 * Tosc * (TMR2 Prescaler)
                                    ; Para 8 kHz: PR2 = ((1/8k)/(4*0.4e-6*4))-1 = 124 (0x7C)
+    BANKSEL PR2    
     movwf   PR2                   ; Define período do PWM
 
     banksel CCP1CON
-    movlw   d'25'                 ; Duty Cycle inicial = 10% (25/1024 de ciclo total)
+    movlw   d'26'                 ; Duty Cycle inicial = 10% (26/1024 de ciclo total)
     movwf   CCPR1L                ; Bits mais significativos do duty cycle
     movlw   b'00001100'           ; Bits menos significativos para duty cycle
     movwf   CCP1CON
@@ -53,31 +56,38 @@ Start:
 
     bsf     T2CON, TMR2ON         ; Liga Timer2 para iniciar PWM
 
-    clrf    duty_cycle            ; Inicializa duty_cycle com 0 (10%)
-
 ;------------------------------------------
 ; Loop principal
 ;------------------------------------------
 MainLoop:
-    btfss   BUTAO_PIN            ; Verifica se o botão foi pressionado
+    btfss   BUTAO_PIN             ; Verifica se o botão foi pressionado
     goto    MainLoop              ; Se não pressionado, continua no loop
 
-    call    IncrementaDutyCycle    ; Incrementa o duty cycle
-
+    call    IncrementaDutyCycle   ; Incrementa o duty cycle
+    call    atraso                ; Chama delay para evitar leituras múltiplas
     goto    MainLoop              ; Retorna ao loop principal
 
 ;------------------------------------------
 ; Sub-rotinas
 ;------------------------------------------
 IncrementaDutyCycle:
-    incf    duty_cycle, F         ; Incrementa duty_cycle
-    movf    duty_cycle, W
-    ;andlw   d'9'                  ; Limita duty_cycle a 90% (máximo 9 passos de 10%)
-    movwf   duty_cycle
+    movlw   d'26'
+    addwf   duty_cycle, F
 
     movf    duty_cycle, W
     movwf   CCPR1L                ; Atualiza o duty cycle no registrador CCPR1L
 
+    return
+
+atraso:
+    movlw   d'255'                ; Loop externo
+DelayOuter:
+    movwf   TEMP1
+DelayInner:
+    decfsz  TEMP1, F              ; Decrementa TEMP1
+    goto    DelayInner            ; Continua até TEMP1 zerar
+    decfsz  W, F                  ; Decrementa loop externo
+    goto    DelayOuter            ; Continua até W zerar
     return
 
     end
