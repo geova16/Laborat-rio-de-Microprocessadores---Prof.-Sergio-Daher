@@ -72,7 +72,7 @@ MainLoop:
 IncrementaDutyCycle:
     incf    duty_cycle, F         ; Incrementa duty_cycle
     movf    duty_cycle, W
-    andlw   d'9'                  ; Limita duty_cycle a 90% (máximo 9 passos de 10%)
+    ;andlw   d'9'                  ; Limita duty_cycle a 90% (máximo 9 passos de 10%)
     movwf   duty_cycle
 
     movf    duty_cycle, W
