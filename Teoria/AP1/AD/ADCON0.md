@@ -58,7 +58,7 @@ MOVFW ADRESL       ; Lê o byte menos significativo do resultado
 MOVWF ad_L         ; Armazena o valor em um registrador
 MOVFW ADRESH       ; Lê o byte mais significativo do resultado
 MOVWF ad_H         ; Armazena o valor em outro registrador
-
+```
 
 # Bit ADCS1 no Registrador ADCON0 (Microcontroladores PIC)
 
