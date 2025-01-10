@@ -1,36 +1,70 @@
+#INCLUDE <P16F877A.INC>
 
-    LIST P=16F877A          
-    INCLUDE <P16F877A.INC>  
-    
-    CBLOCK 0x20             
-        TEMP                
-    ENDC
- 
-    ORG 0x0000              
+errorlevel  -302              ; Suprime a mensagem 302 do arquivo de lista
 
-; Configuração inicial
-START:
-    BANKSEL ADCON1          ; Seleciona o banco onde está o registrador ADCON1
-    CLRF ADCON1             ; Configura todos os pinos ANx como analógicos, referência VDD/VSS
-    
-    BANKSEL TRISA           ; Seleciona o banco onde está o registrador TRISA
-    MOVLW 0xFF              ; Configura todos os pinos de PORTA como entrada
-    MOVWF TRISA
-    
-    BANKSEL TRISC           ; Seleciona o banco onde está o registrador TRISC
-    CLRF TRISC              ; Configura todos os pinos de PORTC como saída
-    
-    BANKSEL ADCON0          ; Seleciona o banco onde está o registrador ADCON0
-    MOVLW b'0100001'              ; Configura ADC: ativa o módulo e seleciona o canal AN0
-    MOVWF ADCON0
+; Definição de registradores
+ad_L       EQU   0x71         
+ad_H       EQU   0x72        
+tempd1     EQU   0x73         
+tempd2     EQU   0x74        
 
-MAIN_LOOP:
-    BSF ADCON0, GO_DONE     ; Inicia a conversão ADC
-WAIT_ADC:
-    BTFSC ADCON0, GO_DONE   ; Aguarda até que a conversão seja concluída
-    GOTO WAIT_ADC
-    MOVF ADRESH, W          ; Move o resultado (8 bits menos significativos) para W
-    MOVWF PORTC             ; Escreve o resultado no PORTC
-    GOTO MAIN_LOOP          ; Repete o processo
-  
-   END
+; Vetor de reset e interrupção
+ORG 0
+    GOTO INI                  ; Redireciona para o início do programa
+
+ORG 4
+    RETFIE                    ; Retorno para interrupções (não utilizado no momento)
+
+; ------------------------------
+; Rotina de inicialização
+INI:
+    ; Configuração dos pinos de entrada e saída
+    BANKSEL TRISA             ; Seleciona o banco de memória que contém TRISA
+    MOVLW b'00000001'         ; Configura RA0 (AN0) como entrada analógica
+    MOVWF TRISA               ; Grava a configuração em TRISA
+
+    BANKSEL TRISC             ; Seleciona o banco de memória que contém TRISC
+    CLRF TRISC                ; Configura todos os pinos de PORTC como saída
+
+    ; Configuração do ADC
+    BANKSEL ADCON1            ; Seleciona o banco de memória que contém ADCON1
+    CLRF    ADCON1
+    
+    BANKSEL PORTC
+    CLRF    PORTC
+
+MAIN:
+    ; Loop principal
+    CALL le_ad                ; Chama a sub-rotina para realizar a leitura do ADC
+    
+    BANKSEL ad_H              ; Seleciona o banco onde ad_H está localizado
+    MOVFW ad_H                ; Move o byte mais significativo do resultado para o W
+    
+    BANKSEL PORTC             ; Seleciona o banco de PORTC
+    MOVWF PORTC               ; Exibe o valor do byte alto no PORTC
+    GOTO MAIN                 ; Retorna ao início do loop principal
+
+; ------------------------------
+; Sub-rotina para leitura do ADC
+le_ad:
+    BANKSEL ADCON0            ; Seleciona o banco que contém ADCON0
+    MOVLW   b'01000001'
+    MOVWF   ADCON0
+    
+    BSF ADCON0, GO
+    
+    BTFSC ADCON0, GO
+    GOTO $-1
+    
+    ; Captura o resultado do ADC
+    BANKSEL ADRESL            ; Seleciona o banco onde ADRESL está localizado
+    MOVFW ADRESL              ; Move o byte menos significativo para W
+    MOVWF ad_L                ; Armazena o byte em ad_L
+
+    BANKSEL ADRESH            ; Seleciona o banco onde ADRESH está localizado
+    MOVFW ADRESH              ; Move o byte mais significativo para W
+    MOVWF ad_H                ; Armazena o byte em ad_H
+
+    RETURN                    ; Retorna para o programa principal
+
+END
