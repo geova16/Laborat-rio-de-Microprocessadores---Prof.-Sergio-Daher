@@ -1,98 +1,104 @@
 #INCLUDE <P16F877A.INC>
-			
- errorlevel  -302              ; suppress message 302 from list file
 
+errorlevel  -302              ; Suprime a mensagem 302 do arquivo de lista
 
-ad_L       EQU   0x71
-ad_H       EQU   0x72
+; Definição de registradores
+ad_L       EQU   0x71         ; Registrador para armazenar o byte menos significativo do ADC
+ad_H       EQU   0x72         ; Registrador para armazenar o byte mais significativo do ADC
+tempd1     EQU   0x73         ; Registrador temporário 1
+tempd2     EQU   0x74         ; Registrador temporário 2
 
-tempd1     EQU   0x73  ;;
-tempd2     EQU   0x74  ;;
+; Vetor de reset e interrupção
+ORG 0
+    GOTO INI                  ; Redireciona para o início do programa
 
+ORG 4
+    RETFIE                    ; Retorno para interrupções (não utilizado no momento)
 
-	ORG 0
-    GOTO INI
-
-	ORG 4
-	RETFIE  ;; 
-
+; ------------------------------
+; Rotina de inicialização
 INI:
-   ;------------------------------	
-    BANKSEL TRISA
-    MOVLW b'00000001'		;;  Dica: Os pinos ANx de entrada analógica  estão em PORTA
-    MOVWF TRISA ; Dica: Os pinos Anx devem ser configurados como entradas 
+    ; Configuração dos pinos de entrada e saída
+    BANKSEL TRISA             ; Seleciona o banco de memória que contém TRISA
+    MOVLW b'00000001'         ; Configura RA0 (AN0) como entrada analógica
+    MOVWF TRISA               ; Grava a configuração em TRISA
 
-    BANKSEL TRISC ;; 
-    clrf	TRISC 	      ;; Dica: Os pinos de acionamento dos LEDs do BARGRAPH estão conectados a PORTC 
-	  ;  Dica: Pinos para acionamento externo devem ser confirados como saídas 
-   ;------------------------------	
-    BANKSEL ADCON1
-    movlw 	   ;; Configurar conforme pedido no guia
-    movwf 	ADCON1
-   ;------------------------------	
+    BANKSEL TRISC             ; Seleciona o banco de memória que contém TRISC
+    CLRF TRISC                ; Configura todos os pinos de PORTC como saída
+
+    ; Configuração do ADC
+    BANKSEL ADCON1            ; Seleciona o banco de memória que contém ADCON1
+    BCF ADCON1, ADFM          ; Justificação à esquerda
+    BCF ADCON1, PCFG3         ; Configura os pinos AN0-AN7 como analógicos
+    BCF ADCON1, PCFG2
+    BSF ADCON1, PCFG1
+    BCF ADCON1, PCFG0
 
 MAIN:
-    CALL 	le_ad
-    BANKSEL ad_H
-    movfw   ad_H
-    BANKSEL PORTC
-    movwf 	PORTC
-    GOTO 	MAIN
+    ; Loop principal
+    CALL le_ad                ; Chama a sub-rotina para realizar a leitura do ADC
+    BANKSEL ad_H              ; Seleciona o banco onde ad_H está localizado
+    MOVFW ad_H                ; Move o byte mais significativo do resultado para o W
+    BANKSEL PORTC             ; Seleciona o banco de PORTC
+    MOVWF PORTC               ; Exibe o valor do byte alto no PORTC
+    GOTO MAIN                 ; Retorna ao início do loop principal
 
+; ------------------------------
+; Sub-rotina para leitura do ADC
+le_ad:
+    BANKSEL ADCON0            ; Seleciona o banco que contém ADCON0
+    BSF ADCON0, ADCS1         ; Configura o clock do ADC para FOSC/32
+    BSF ADCON0, ADON          ; Liga o módulo ADC
 
-;==========================================
-le_ad
-    	BANKSEL ADCON0
-   	movlw 	        ;; Configurar conforme pedido no guia
-    	movwf 	ADCON0
-		
-        BANKSEL tempd1
-        call    d10_1ms
+    ; Atraso para estabilização do ADC
+    BANKSEL tempd1            ; Seleciona o banco para variáveis temporárias
+    CALL d10_1ms              ; Chama a rotina de atraso de 1 ms
 
-    	BANKSEL ADCON0
-   	BSF 	ADCON0, 2
+    ; Inicia a conversão ADC
+    BANKSEL ADCON0            ; Seleciona o banco de ADCON0
+    BSF ADCON0, 6             ; Seta o bit GO/DONE para iniciar a conversão
 
-        BANKSEL tempd1
-        call    d10_1ms
-        
-    	BANKSEL ADRESL
-   	MOVFW 	ADRESL
-        MOVWF   ad_L
+    ; Aguarda a conclusão da conversão (tempo adicional)
+    BANKSEL tempd1            ; Seleciona o banco para variáveis temporárias
+    CALL d10_1ms              ; Chama a rotina de atraso de 1 ms
 
-	BANKSEL ADRESH
-   	MOVFW 	ADRESH
-        MOVWF   ad_H
+    ; Captura o resultado do ADC
+    BANKSEL ADRESL            ; Seleciona o banco onde ADRESL está localizado
+    MOVFW ADRESL              ; Move o byte menos significativo para W
+    MOVWF ad_L                ; Armazena o byte em ad_L
 
-	return
+    BANKSEL ADRESH            ; Seleciona o banco onde ADRESH está localizado
+    MOVFW ADRESH              ; Move o byte mais significativo para W
+    MOVWF ad_H                ; Armazena o byte em ad_H
 
-;******************
-;1 ms delay routine (10 MHz)
-;******************
-d10_1ms
-	movlw	.4			;
-	movwf	tempd1		;
-dly_1my	movlw	.204	;
-	movwf	tempd2		; 
-dly_1mx	decfsz	tempd2,1;		
-	goto	dly_1mx		;
-	clrwdt				;   
-	decfsz	tempd1,1	;		
-	goto	dly_1my		;
-	return				;
+    RETURN                    ; Retorna para o programa principal
 
+; ------------------------------
+; Rotina de atraso de 1 ms
+; (baseada em 10 MHz de clock)
+d10_1ms:
+    MOVLW .4                  ; Configura o contador externo para 4 ciclos
+    MOVWF tempd1              ; Armazena no registrador temporário tempd1
+dly_1my:
+    MOVLW .204                ; Configura o contador interno para 204 ciclos
+    MOVWF tempd2              ; Armazena no registrador temporário tempd2
+dly_1mx:
+    DECFSZ tempd2, 1          ; Decrementa o contador interno
+    GOTO dly_1mx              ; Continua decrementando até zerar
+    CLRWT                     ; Limpa o watchdog timer
+    DECFSZ tempd1, 1          ; Decrementa o contador externo
+    GOTO dly_1my              ; Continua decrementando até zerar
+    RETURN                    ; Retorna ao programa principal
 
-
-;******************
-;4.4uS delay routine (10 MHz)
-;******************
-dly_4uS
-	movlw	.2			;
-	movwf	tempd1		;
-dlyloop4uS
-	nop					;
-	decfsz	tempd1,1	;		
-	goto	dlyloop4uS	;
-	return				;
-
-
-
+; ------------------------------
+; Rotina de atraso de 4,4 µs
+; (baseada em 10 MHz de clock)
+dly_4uS:
+    MOVLW .2                  ; Configura o contador interno para 2 ciclos
+    MOVWF tempd1              ; Armazena no registrador temporário tempd1
+dlyloop4uS:
+    NOP                       ; Instrução de espera (1 ciclo)
+    DECFSZ tempd1, 1          ; Decrementa o contador interno
+    GOTO dlyloop4uS           ; Continua decrementando até zerar
+    RETURN                    ; Retorna ao programa principal
+END
