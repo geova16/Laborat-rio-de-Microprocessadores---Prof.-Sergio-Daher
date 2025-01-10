@@ -33,10 +33,15 @@ INI:
     BCF ADCON1, PCFG2
     BSF ADCON1, PCFG1
     BCF ADCON1, PCFG0
+    
+    BANKSEL PORTC
+    CLRF    PORTC
 
 MAIN:
     ; Loop principal
     CALL le_ad                ; Chama a sub-rotina para realizar a leitura do ADC
+    
+    
     BANKSEL ad_H              ; Seleciona o banco onde ad_H está localizado
     MOVFW ad_H                ; Move o byte mais significativo do resultado para o W
     BANKSEL PORTC             ; Seleciona o banco de PORTC
@@ -48,11 +53,14 @@ MAIN:
 le_ad:
     BANKSEL ADCON0            ; Seleciona o banco que contém ADCON0
     BSF ADCON0, ADCS1         ; Configura o clock do ADC para FOSC/32
+    BCF ADCON0,	CHS2         
+    BCF ADCON0,	CHS1         
+    BCF ADCON0,	CHS0
     BSF ADCON0, ADON          ; Liga o módulo ADC
 
     ; Atraso para estabilização do ADC
-    BANKSEL tempd1            ; Seleciona o banco para variáveis temporárias
-    CALL d10_1ms              ; Chama a rotina de atraso de 1 ms
+    ;BANKSEL tempd1            ; Seleciona o banco para variáveis temporárias
+    ;CALL d10_1ms              ; Chama a rotina de atraso de 1 ms
 
     ; Inicia a conversão ADC
     BANKSEL ADCON0            ; Seleciona o banco de ADCON0
