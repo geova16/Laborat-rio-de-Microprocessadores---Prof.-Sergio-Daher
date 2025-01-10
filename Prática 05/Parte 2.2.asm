@@ -21,7 +21,7 @@ START:
     CLRF TRISC              ; Configura todos os pinos de PORTC como saída
     
     BANKSEL ADCON0          ; Seleciona o banco onde está o registrador ADCON0
-    MOVLW b'1000001'              ; Configura ADC: ativa o módulo e seleciona o canal AN0
+    MOVLW b'0100001'              ; Configura ADC: ativa o módulo e seleciona o canal AN0
     MOVWF ADCON0
 
 MAIN_LOOP:
