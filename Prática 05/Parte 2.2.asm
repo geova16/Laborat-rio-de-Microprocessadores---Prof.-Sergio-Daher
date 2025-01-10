@@ -29,7 +29,7 @@ MAIN_LOOP:
 WAIT_ADC:
     BTFSC ADCON0, GO_DONE   ; Aguarda até que a conversão seja concluída
     GOTO WAIT_ADC
-    MOVF ADRESL, W          ; Move o resultado (8 bits menos significativos) para W
+    MOVF ADRESH, W          ; Move o resultado (8 bits menos significativos) para W
     MOVWF PORTC             ; Escreve o resultado no PORTC
     GOTO MAIN_LOOP          ; Repete o processo
   
