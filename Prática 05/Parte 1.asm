@@ -3,10 +3,10 @@
 errorlevel  -302              ; Suprime a mensagem 302 do arquivo de lista
 
 ; Definição de registradores
-ad_L       EQU   0x71         ; Registrador para armazenar o byte menos significativo do ADC
-ad_H       EQU   0x72         ; Registrador para armazenar o byte mais significativo do ADC
-tempd1     EQU   0x73         ; Registrador temporário 1
-tempd2     EQU   0x74         ; Registrador temporário 2
+ad_L       EQU   0x71         
+ad_H       EQU   0x72        
+tempd1     EQU   0x73         
+tempd2     EQU   0x74        
 
 ; Vetor de reset e interrupção
 ORG 0
@@ -50,11 +50,16 @@ le_ad:
     BANKSEL ADCON0            ; Seleciona o banco que contém ADCON0
     MOVLW   b'01000001'
     MOVWF   ADCON0
+    
+    BSF ADCON0, GO
 
     ; Aguarda a conclusão da conversão (tempo adicional)
     BANKSEL tempd1            ; Seleciona o banco para variáveis temporárias
     CALL d10_1ms              ; Chama a rotina de atraso de 1 ms
-
+    
+    BTFSC ADCON0, GO
+    GOTO $-1
+    
     ; Captura o resultado do ADC
     BANKSEL ADRESL            ; Seleciona o banco onde ADRESL está localizado
     MOVFW ADRESL              ; Move o byte menos significativo para W
@@ -78,7 +83,7 @@ dly_1my:
 dly_1mx:
     DECFSZ tempd2, 1          ; Decrementa o contador interno
     GOTO dly_1mx              ; Continua decrementando até zerar
-    CLRWT                     ; Limpa o watchdog timer
+    CLRWTDG                     ; Limpa o watchdog timer
     DECFSZ tempd1, 1          ; Decrementa o contador externo
     GOTO dly_1my              ; Continua decrementando até zerar
     RETURN                    ; Retorna ao programa principal
