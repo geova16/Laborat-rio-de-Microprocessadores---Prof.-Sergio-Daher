@@ -10,12 +10,22 @@
 
 - Ele pode operar utilizando o **clock interno** ou uma fonte externa de clock, além de contar pulsos com configuração de prescaler.
 
-## 1. Características do Timer0
-- Registrador **TMR0** de 8 bits.
-- Pode operar como temporizador ou contador.
-- Possui um **prescaler programável** compartilhado com o **Watchdog Timer (WDT)**.
-- Capacidade de incrementar o valor em **bordas ascendentes ou descendentes**.
-- Pode ser configurado com fonte de clock interna ou externa.
+## 1. Quanto tempo para o TIMER0 estourar (Interrupção)?
+
+
+O cálculo do **TempoTotal** é realizado com base na fórmula a seguir:
+
+```
+TempoTotal = (256 - tempoInicial) * Prescaler * CicloMaquina
+```
+
+Onde:
+- **Prescaler**: De acordo com o valor selecionado no registrador `OPTION_REG`.
+- **CicloMaquina**: Calculado pela fórmula:
+
+```
+CicloMaquina = 4 / Frequência do Clock Cristal
+```
 
 ## 2. Configuração do Timer0
 A configuração do **Timer0** é feita através do **registrador OPTION_REG**.
