@@ -1,6 +1,14 @@
 # Configuração do Timer0 no PIC16F877
 
-O **Timer0** é um temporizador/contador de 8 bits presente no microcontrolador **PIC16F877**. Ele pode operar utilizando o **clock interno** ou uma fonte externa de clock, além de contar pulsos com configuração de prescaler.
+- O **Timer0** é um temporizador/contador de 8 bits presente no microcontrolador **PIC16F877**. 
+- Naturalmente, ele conta de 0 a 256 (decimal), 0x00 a 0xFF (hexa).
+- A contagem é armazenada no registrador TMR0.
+- A cada ciclo de clock é acresentado +1 no TMR0 até chegar no limite (256) e acontecer um estouro.
+- O prescale serve pra definir se o TIMER0 vai ser incrementado a cada ciclo de clock ou não, é possível definir em quantos ciclos de clock o TIMER0 vai somar +1.
+- Assim que acontece o estouro, acontece a interrupção do TIMER0 (se tiver habilitada no registrador INTCON) e o registrador TMR0 reseta.
+- Quando isso acontece, o BIT2 (TMR0IF - Timer0 Interruption Flag) do registrador INTCON é setado. (Necessário ser limpo manualmente - BCF TMR0IF, INTCON)
+
+- Ele pode operar utilizando o **clock interno** ou uma fonte externa de clock, além de contar pulsos com configuração de prescaler.
 
 ## 1. Características do Timer0
 - Registrador **TMR0** de 8 bits.
@@ -27,6 +35,7 @@ A configuração do **Timer0** é feita através do **registrador OPTION_REG**.
 #### Passo 1: Escolher a Fonte do Timer0
 - **Clock Interno**: T0CS = 0.
 - **Clock Externo** (pino T0CKI): T0CS = 1.
+- Na prática, usamos sempre clock interno, então --> BIT5 = 0
 
 #### Passo 2: Definir a Borda de Contagem
 - **Borda Ascendente**: T0SE = 0.
@@ -34,6 +43,7 @@ A configuração do **Timer0** é feita através do **registrador OPTION_REG**.
 
 #### Passo 3: Configurar o Prescaler
 - **Prescaler para Timer0**: PSA = 0.
+- Na prática, sempre usamos PSA = 0 --> BIT3 = 0
 - **Prescaler para WDT**: PSA = 1.
 - Selecionar o valor do prescaler com os bits PS2, PS1 e PS0.
 
