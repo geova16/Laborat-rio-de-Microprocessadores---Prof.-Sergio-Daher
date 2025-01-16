@@ -21,18 +21,22 @@ O **OPTION_REG** é um registrador especial utilizado na configuração do **Tim
 ### Bit 6: INTEDG - Borda da Interrupção
 - **0**: A interrupção externa ocorre na borda **descendente** do sinal no pino INT.
 - **1**: A interrupção externa ocorre na borda **ascendente** do sinal no pino INT.
+- Na prática, BIT6 = 0.
 
 ### Bit 5: T0CS - Fonte do Timer 0
 - **0**: O Timer 0 utiliza o **clock interno**.
 - **1**: O Timer 0 utiliza o sinal externo no pino **T0CKI**.
+- Na prática, BIT5 = 0.
 
 ### Bit 4: T0SE - Borda de Contagem do Timer 0
 - **0**: O Timer 0 incrementa na borda **ascendente** do sinal em T0CKI.
 - **1**: O Timer 0 incrementa na borda **descendente** do sinal em T0CKI.
+- Na prática, BIT4 = 0.
 
 ### Bit 3: PSA - Prescaler Assignment
 - **0**: O prescaler é atribuido ao **Timer 0**.
 - **1**: O prescaler é atribuido ao **Watchdog Timer (WDT)**.
+- Na prática, BIT3 = 0.
 
 ### Bits 2-0: PS2:PS0 - Prescaler Rate Select
 Os bits PS2, PS1 e PS0 determinam o fator de divisão do prescaler, conforme a tabela abaixo:
