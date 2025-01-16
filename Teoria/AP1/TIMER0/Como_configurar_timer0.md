@@ -19,8 +19,20 @@ O cálculo do **TempoTotal** é realizado com base na fórmula a seguir:
 TempoTotal = (256 - tempoInicial) * Prescaler * CicloMaquina
 ```
 
+O tempoInicial geralmente é 0 mas é possível carregar o registrador TMR0 com um valor para que ele conte a partir desse valor.
+
+Exemplo:
+
+```assembly
+BANKSEL    TMR0
+MOVLW    d'100'
+MOVWF    TMR0
+```
+
+Nesse caso, o TIMER0 vai contar de 100 até 256 e estourar, depois disso, o TIMER0 é zerado novamente. Então, para essa contagem sempre acontecer de 100 até 256 o TIMER0 tem que ser carregado em todo início de Loop.
+
 Onde:
-- **Prescaler**: De acordo com o valor selecionado no registrador `OPTION_REG`.
+- **Prescaler**: De acordo com o valor selecionado no registrador `OPTION_REG` nos BITS (PS2:PS0).
 - **CicloMaquina**: Calculado pela fórmula:
 
 ```
