@@ -7,11 +7,11 @@ O registrador **CCP1CON** é utilizado para configurar e controlar o módulo CCP
 
 ## Estrutura do Registrador CCP1CON
 
-| **Bits** | **Nome**        | **Descrição**                                                                 |
+| **Bits** | **Nome**        | **Descrição**                                                               |
 |----------|-----------------|-----------------------------------------------------------------------------|
-| 7-6      | CCP1X:CCP1Y    | Bits menos significativos (LSB) do duty cycle no modo PWM.                  |
-| 5-4      | Não utilizado  | Reservado (lê-se como 0).                                                    |
-| 3-0      | CCP1M3:CCP1M0  | Seleção do modo de operação do módulo CCP1.                                  |
+| 7-6      | Não utilizado  | Reservado (lê-se como 0).                                                  |
+| 5-4      | CCP1X:CCP1Y    | Bits menos significativos (LSB) do duty cycle no modo PWM.                 |
+| 3-0      | CCP1M3:CCP1M0  | Seleção do modo de operação do módulo CCP1.                                |
 
 ### Configuração do Modo (CCP1M3:CCP1M0)
 
@@ -28,13 +28,13 @@ O registrador **CCP1CON** é utilizado para configurar e controlar o módulo CCP
 
 ## Função de Cada Bit
 
-### Bits 7-6: CCP1X e CCP1Y
-- Utilizados no modo **PWM** para definir os dois bits menos significativos (LSB) do **duty cycle**.
-- Estes bits complementam os 8 bits superiores armazenados no registrador **CCPR1L**.
-
-### Bits 5-4: Reservados
+### Bits 7-6: Reservados
 - Não utilizados.
 - Devem ser mantidos como **0** para evitar comportamento inesperado.
+
+### Bits 5-4: CCP1X e CCP1Y
+- Utilizados no modo **PWM** para definir os dois bits menos significativos (LSB) do **duty cycle**.
+- Estes bits complementam os 8 bits superiores armazenados no registrador **CCPR1L**.
 
 ### Bits 3-0: CCP1M3:CCP1M0
 - Configuram o modo de operação do módulo CCP1.
