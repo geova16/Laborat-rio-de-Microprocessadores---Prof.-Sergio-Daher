@@ -29,7 +29,7 @@ MOVLW    d'100'
 MOVWF    TMR0
 ```
 
-Nesse caso, o TIMER0 vai contar de 100 até 256 e estourar, depois disso, o TIMER0 é zerado novamente. Então, para essa contagem sempre acontecer de 100 até 256 o TIMER0 tem que ser carregado em todo início de Loop.
+Nesse caso, o TIMER0 vai contar de 100 até 256 e estourar, depois disso, o TMR0 é zerado novamente. Então, para essa contagem sempre acontecer de 100 até 256 o TMR0 tem que ser carregado com 100 em todo início de Loop.
 
 Onde:
 - **Prescaler**: De acordo com o valor selecionado no registrador `OPTION_REG` nos BITS (PS2:PS0).
