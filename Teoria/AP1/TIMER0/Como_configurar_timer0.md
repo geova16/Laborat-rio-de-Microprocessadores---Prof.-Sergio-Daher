@@ -13,7 +13,7 @@
 ## 1. Quanto tempo para o TIMER0 estourar (Interrupção)?
 
 
-O cálculo do **TempoTotal** é realizado com base na fórmula a seguir:
+### O cálculo do **TempoTotal** é realizado com base na fórmula a seguir:
 
 ```
 TempoTotal = (256 - tempoInicial) * Prescaler * CicloMaquina
@@ -21,7 +21,7 @@ TempoTotal = (256 - tempoInicial) * Prescaler * CicloMaquina
 
 O tempoInicial geralmente é 0 mas é possível carregar o registrador TMR0 com um valor para que ele conte a partir desse valor.
 
-Exemplo:
+### Exemplo:
 
 ```assembly
 BANKSEL    TMR0
@@ -37,6 +37,49 @@ Onde:
 
 ```
 CicloMaquina = 4 / Frequência do Clock Cristal
+```
+
+## 1.2 Como escolher o PRESCALE
+
+- Suponha um clock de 10MHz
+- Suponha que queremos executar uma ação qualquer a cada 1s 
+- Assim, vamos calcular o tempo total de cada interrupção estouro usando a fórmula acima
+- Calcularemos quantos estouros acontecem por segundo
+- Supondo que acontecem x interrupções por segundo
+- Contaremos a quantidade de interrupções e, assim que atingir x interrupções, executaremos a ação
+
+### Exemplo:
+
+- O prescale deve ser escolhido de tal forma que a quantidade de interrupções por segundo não ultrapasse 256 (8 bits) que é a capacidade do registrador que vai armazenar a quantidade de estouros.
+
+```
+tempoTotal = (256 x prescale x 4) / 10MHz
+
+tempoTotal = (256 x 256 x 4) / 10MHz
+
+tempoTotal = 0,0262144s
+
+```
+
+- Quantidade de interrupções por segundo:
+
+```
+
+Qtd = 1s / tempoTotal
+
+Qtd = 1 / 0,0262144s
+
+Qtq = 38 interrupções
+
+```
+
+- Então, usaremos uma variável para contar a quantidade de interrupções e, assim que alcançar 38, faremos a ação:
+
+```assembly
+#INCLUDE <PIC16F628A.INC>
+
+CONTA EQU 0x20    ; Variável pra armazenar a quantidade de estouros
+
 ```
 
 ## 2. Configuração do Timer0
@@ -91,18 +134,33 @@ O registrador **OPTION_REG** é configurado para definir todas as opções acima
 
 ### Código Assembly
 ```assembly
-; Configura OPTION_REG
-MOVLW b'00000110'  ; RBPU = 0, INTEDG = 0, T0CS = 0, T0SE = 0, PSA = 0, PS2:PS0 = 110 (1:8)
-OPTION            ; Carrega o valor no registrador OPTION_REG
 
-; Iniciar Timer0
-CLRF TMR0         ; Zera o registrador TMR0
+#INCLUDE <P16F877A.INC>
+
+ORG 0
+    GOTO INICIO
+
+ORG 4     ; Quando a o timer0 estoura (interrupção) o código vem pra cá.
+          ; Qualquer interrupção (que estiver habilitada em INTCON) que houver o código vem pra cá.
+
+    BANKSEL INTCON
+    BTFSS TMR0IF, INTCON    ; Verifica se a flag (bit) está setada (interrupção do timer0 aconteceu)
+    RETFIE                  ; Se sim, pula o RETFIE (RETFIE = Return from interruption/Retorna da interrupção), se não, retorna pro loop.
+    BCF    TMR0IF, INTCON   ; Reseta a flag para ser possivel detectar a interrupção novamente.
+
+INICIO:
+
+    BANKSEL    INTCON
+    BSF    INTCON, GIE    ; Ativa as interrupções globais
+    BSF    INTCON, T0IE   ; Ativa a interrupção do Timer0
+    
+    BANKSEL    OPTION_REG
+    MOVLW    b'00000110'  ; RBPU = 0, INTEDG = 0, T0CS = 0, T0SE = 0, PSA = 0, PS2:PS0 = 110 (1:8)
+    MOVWF    OPTION_REG            ; Carrega o valor no registrador OPTION_REG
+
+    CLRF TMR0         ; Zera o registrador TMR0
 
 LOOP:
-    BTFSS INTCON, T0IF  ; Verifica a flag T0IF (Timer0 Overflow)
-    GOTO LOOP           ; Retorna para LOOP se não houve overflow
-    BSF INTCON, T0IF    ; Limpa a flag T0IF
-    ; Aqui você pode adicionar o código para o que fazer quando o Timer0 estourar
     GOTO LOOP
 ```
 
