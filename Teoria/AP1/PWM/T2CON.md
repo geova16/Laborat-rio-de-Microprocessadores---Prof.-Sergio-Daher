@@ -7,12 +7,11 @@ O registrador **T2CON** controla as principais funcionalidades do Timer2 nos mic
 | **Bit** | **Nome**     | **Descrição**                                         |
 |---------|--------------|-----------------------------------------------------|
 | 7       | Não usado    | Reservado (lê-se como 0).                           |
-| 6       | Não usado    | Reservado (lê-se como 0).                           |
-| 5       | TOUTPS3      | Seleção do pós-escaler (bit mais significativo).     |
-| 4       | TOUTPS2      | Seleção do pós-escaler.                              |
-| 3       | TOUTPS1      | Seleção do pós-escaler.                              |
-| 2       | TOUTPS0      | Seleção do pós-escaler (bit menos significativo).    |
-| 1       | TMR2ON       | Liga/Desliga o Timer2 (1 = Ativo, 0 = Desligado).    |
+| 6       | TOUTPS3      | Seleção do pós-escaler (bit mais significativo).     |
+| 5       | TOUTPS2      | Seleção do pós-escaler.                              |
+| 4       | TOUTPS1      | Seleção do pós-escaler.                              |
+| 3       | TOUTPS0      | Seleção do pós-escaler (bit menos significativo).    |
+| 2       | TMR2ON       | Liga/Desliga o Timer2 (1 = Ativo, 0 = Desligado).    |
 | 0       | T2CKPS<1:0>  | Seleção do prescaler (2 bits).                      |
 
 ---
@@ -77,10 +76,6 @@ O pós-escaler é usado para dividir o número de ciclos do Timer2 antes de gera
 3. **Interrupções**:
    - A interrupção do Timer2 ocorre quando o Timer2 completa seu ciclo e o pós-escaler termina.
    - A flag de interrupção **TMR2IF** no registrador **PIR1** é usada para monitorar este evento.
-
-4. **Uso em PWM**:
-   - O Timer2 é amplamente utilizado como base para o módulo PWM, controlando a frequência do sinal.
-
 ---
 
 ## Referência
