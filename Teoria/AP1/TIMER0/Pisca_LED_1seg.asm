@@ -1,7 +1,8 @@
 #INCLUDE <P16F628A.INC>
 
-CONTA	EQU 0x20    ;Variável para armazenar a quantidade de estouros
-		    ;15 estouros = 1s
+CONTA	EQU 0x20    ; Variável para armazenar a quantidade de estouros
+		    ; 15 estouros = 1s
+		    ; CLOCK = 4MHz
 
 ;------------------------------------------
 ; Vetores de Reset e Interrupção
