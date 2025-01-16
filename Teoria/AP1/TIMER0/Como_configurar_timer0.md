@@ -73,12 +73,54 @@ Qtq = 38 interrupções
 
 ```
 
+- Note que, se escolhessemos um preescale pequeno, (1, por exemplo), o tempoTotal seria muito menor, o que causaria uma maior quantidade de estouros por segundo (256 vezes mais estouros) e esse valor seria maior do que 8 bits e impossivel de armazenar no PIC.
+
 - Então, usaremos uma variável para contar a quantidade de interrupções e, assim que alcançar 38, faremos a ação:
 
 ```assembly
 #INCLUDE <PIC16F628A.INC>
 
 CONTA EQU 0x20    ; Variável pra armazenar a quantidade de estouros
+
+ORG 0
+    GOTO INICIO
+
+ORG 4
+    BTFSS INTCON, TMR0IF ; 1 = Interrupção aconteceu --> Pula o RETFIE
+                         ; 0 = Interrupção não aconteceu --> Não pula o RETFIE
+    RETFIE
+
+    BANKSEL INTCON
+    BCF    INTCON, TMR0IF ; Limpa a flag para a próxima detecção
+
+    BANKSEL CONTA
+    DECFSZ    CONTA, F    ; Decresce a varíavel que conta estouros, quando ela chegar a 0 ---> Salta o RETFIE
+    RETFIE
+
+    MOVLW    d'38'
+    MOVWF    CONTA    ; Reseta a contagem
+
+    BANKSEL PORTB	; OxFF = b'11111111'
+    MOVLW 0xFF		; Operação XOR com as portas RB0:RB7 (Qualquer bit XOR com 1 é invertido)
+    XORWF PORTB, F	; Inverte os bits de PORTB, fazendo o estado do LED mudar
+
+    RETFIE
+    
+
+INICIO:
+    BANKSEL    INTCON
+    MOVLW    b'10100000' ; (BSF INTCON, GIE - Habilita interrupção global e BSF INTCON, T0IE - Habilita interrupção do Timer0)
+    MOVWF    INTCON
+
+    BANKSEL    OPTION_REG
+    MOVLW    b'00000111' ; PRESCALE = 256
+    MOVWF    OPTION_REG
+
+    BANKSEL    TRISB
+    CLRF    TRISB    ; Define PORTB todo como saída.
+
+MAIN:
+    GOTO MAIN
 
 ```
 
