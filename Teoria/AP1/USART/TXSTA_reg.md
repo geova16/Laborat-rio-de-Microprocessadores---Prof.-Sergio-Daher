@@ -12,7 +12,7 @@ O registrador TXSTA possui 8 bits, cada um com uma função específica relacion
 | 6       | TX9        | **9-Bit Transmit Enable**: Habilita a transmissão de dados com 9 bits.        |
 | 5       | TXEN       | **Transmit Enable**: Habilita o transmissor UART.                             |
 | 4       | SYNC       | **Synchronous Mode Select**: Seleciona entre modo síncrono e assíncrono.      |
-| 3       | SENDB      | **Send Break Character**: Controla o envio de caracteres de break.            |
+| 3       | --         |         --                                                                    |
 | 2       | BRGH       | **High Baud Rate Select**: Seleciona entre baixa e alta taxa de transmissão.  |
 | 1       | TRMT       | **Transmit Shift Register Status**: Indica se o registrador de transmissão está vazio. |
 | 0       | TX9D       | **9th Bit of Transmit Data**: Nono bit de dados a ser transmitido em modo 9 bits. |
@@ -34,10 +34,6 @@ O registrador TXSTA possui 8 bits, cada um com uma função específica relacion
 ### Bit 4: SYNC - Synchronous Mode Select
 - **0**: Modo assíncrono.
 - **1**: Modo síncrono.
-
-### Bit 3: SENDB - Send Break Character
-- **0**: Não envia caracteres de break.
-- **1**: Envia um caractere de break no próximo ciclo de transmissão.
 
 ### Bit 2: BRGH - High Baud Rate Select
 - **0**: Baixa taxa de transmissão (baud rate baixo).
