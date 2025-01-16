@@ -1,47 +1,42 @@
-; Programa para PIC16F628A - Geração de PWM de 10Hz e 2% de Duty Cycle
-; Utilizando o módulo CCP (PWM)
-; Clock: 10 MHz
+; Inclui o arquivo de configuração para o PIC16F628A
+#include <P16F628A.INC>
 
-    #include <P16F628A.inc>       ; Arquivo de definição do microcontrolador
+; Define o ponto inicial do programa
+ORG 0x00
+GOTO INICIO          ; Redireciona para o início do programa principal
 
-    __config _INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_ON & _MCLRE_OFF
+; Vetor de interrupção
+ORG 0x04
+RETFIE               ; Retorna de uma interrupção
 
-;------------------------------------------
-; Inicialização
-;------------------------------------------
-    org 0x0000                    ; Início do programa
-    goto inicio                    ; Pula para o início do programa
+; Rotina principal do programa
+INICIO:
+    ; Configuração do PR2 (Período do PWM)
+    BANKSEL PR2       ; Seleciona o banco de memória para PR2
+    MOVLW d'249'      ; Carrega o valor 249 no registrador W (PR2)
+    MOVWF PR2         ; Move o valor de W para o registrador PR2
 
-    org 0x0004                    ; Vetor de interrupção
-    retfie                        ; Retorna da interrupção
+    ; Configuração do CCP1CON (Modo PWM no CCP1)
+    BANKSEL CCP1CON   ; Seleciona o banco de memória para CCP1CON
+    MOVLW b'00001111' ; Configura o CCP1 em modo PWM
+    MOVWF CCP1CON     ; Move o valor para o registrador CCP1CON
 
-inicio:
-    ; Configuração dos registradores
-    banksel TRISB                 ; Banco 1
-    movlw   0x00                  ; Configura PORTB como saída
-    movwf   TRISB
+    ; Configuração do Duty Cycle no CCPR1L
+    BANKSEL CCPR1L    ; Seleciona o banco de memória para CCPR1L
+    MOVLW b'00000101' ; Define o valor inicial do Duty Cycle
+    MOVWF CCPR1L      ; Move o valor para o registrador CCPR1L
 
-    movlw   b'00001100'           ; Configura Timer2: Prescaler 1:16
-    movwf   T2CON                 ; Timer2 ligado
+    ; Configuração do T2CON (Timer 2 para o PWM)
+    BANKSEL T2CON     ; Seleciona o banco de memória para T2CON
+    MOVLW b'00000100' ; Configura o Timer 2 e ativa o pré-escalonador
+    MOVWF T2CON       ; Move o valor para o registrador T2CON
 
-    movlw   0xFF                  ; Configura PR2 para definir o período
-                                   ; Período PWM = [(PR2) + 1] * 4 * Tosc * (TMR2 Prescaler)
-                                   ; Para 10 Hz: PR2 = ((1/10)/(4*0.4e-6*16))-1 = 156 (aprox. 0x9C)
-    movwf   PR2                   ; Define período do PWM
+    ; Configuração do TRISB (Portas de saída)
+    BANKSEL TRISB     ; Seleciona o banco de memória para TRISB
+    CLRF TRISB        ; Define todas as portas do PORTB como saída
 
-    banksel  CCPR1L               ; Banco 0
-    movlw   d'3'                  ; Duty Cycle = 2% (3/1024 de ciclo total)
-    movwf   CCPR1L                ; Bits mais significativos do duty cycle
-    
-    bsf     CCP1CON, CCP1M3       ; Configura CCP1 no modo PWM
-    bsf     CCP1CON, CCP1M2       
-    
-    bsf     T2CON, TMR2ON         ; Liga Timer2 para iniciar PWM
-
-;------------------------------------------
 ; Loop principal
-;------------------------------------------
-MainLoop:
-    goto    MainLoop              ; Loop infinito
+MAIN:
+    GOTO MAIN         ; Mantém o programa em loop infinito
 
-    end
+END                  ; Finaliza o programa
