@@ -1,93 +1,100 @@
-; Programa para PIC16F628A - Geração de PWM de 8kHz e 10% de Duty Cycle
-; Alteração do Duty Cycle via entrada
-; Clock: 10 MHz
+#INCLUDE <P16F628A.INC>
 
-    #include <P16F628A.inc>       ; Arquivo de definição do microcontrolador
+CONTA	EQU   0x20
+DUTY_CYCLE  EQU	0x21
+DUTY_CYCLE_CCPR1L   EQU	0x22
+DUTY_CYCLE_CCP1CON  EQU	0x23
 
-    __config _INTRC_OSC_NOCLKOUT & _WDT_OFF & _PWRTE_ON & _MCLRE_OFF
+	
+tempd1     EQU   0x73 
+tempd2     EQU   0x74  
+    
+ORG  0x00
+  GOTO INICIO
+ORG  0x04
+  
+  BANKSEL INTCON
+  BCF	INTCON,	INTF
+  
+  BANKSEL   DUTY_CYCLE
+  MOVLW	d'8'
+  ADDWF	DUTY_CYCLE, F
+  
+  MOVF	DUTY_CYCLE, W		; Armazena o valor do duty cycle atual em W
+  MOVWF	DUTY_CYCLE_CCPR1L	; Move de W pra DUTY_CYCLE_CCPR1L
+  RRF DUTY_CYCLE_CCPR1L, 1	; Rotaciona pra direita
+  RRF DUTY_CYCLE_CCPR1L, 1  
+  
+  MOVF	DUTY_CYCLE_CCPR1L, W	; Move o conteúdo do registrador (já rotacionado 2 casas pra direita)
+  
+  BANKSEL CCPR1L
+  MOVWF	CCPR1L			; Move o conteúdo pra ajuste do duty cycle
+  
+  BANKSEL   DUTY_CYCLE
+  BTFSS	DUTY_CYCLE, 1
+  BCF	CCP1CON, 5
+  BTFSC	DUTY_CYCLE, 1
+  BSF	CCP1CON, 5
+  
+  BTFSS	DUTY_CYCLE, 0
+  BCF	CCP1CON, 4
+  BTFSC	DUTY_CYCLE, 0
+  BSF	CCP1CON, 4
+  
+  call d10_1ms
+  
+  RETFIE
 
-;------------------------------------------
-; Definição de constantes
-;------------------------------------------
+INICIO:
+  BANKSEL PR2
+  MOVLW  d'19'
+  MOVWF  PR2
 
-#define BUTAO_PIN PORTB,0         ; Botão de entrada no pino RB0
+  BANKSEL  CCP1CON
+  MOVLW  b'00001111'
+  MOVWF  CCP1CON
 
-;------------------------------------------
-; Variáveis
-;------------------------------------------
-    cblock  0x20                   ; Início da RAM para variáveis
-        duty_cycle                ; Duty cycle atual (em passos de 10%)
-        TEMP1                     ; Temporário para atraso
-    endc
+  BANKSEL  CCPR1L
+  MOVLW  b'00000010'
+  MOVWF  CCPR1L
+  
+  BANKSEL   DUTY_CYCLE
+  MOVLW	d'8'
+  MOVWF	DUTY_CYCLE
 
-;------------------------------------------
-; Inicialização
-;------------------------------------------
-    org 0x0000                    ; Início do programa
-    goto Start                    ; Pula para o início do programa
+  BANKSEL  T2CON
+  MOVLW  b'00000110'
+  MOVWF  T2CON
 
-    org 0x0004                    ; Vetor de interrupção
-    retfie                        ; Retorna da interrupção
+  BANKSEL  TRISB
+  MOVLW	b'00000001'
+  MOVWF	TRISB	
+  
+  BANKSEL   OPTION_REG
+  BSF	OPTION_REG, 7
+  
+  BANKSEL   INTCON
+  BSF	INTCON, GIE
+  BSF	INTCON, INTE
+  
+MAIN:
+ 
+  GOTO MAIN
 
-Start:
-    ; Configuração dos registradores
-    banksel TRISB
-    movlw   0x01                  ; Configura RB0 como entrada e restante como saída
-    movwf   TRISB
-
-    banksel T2CON
-    movlw   b'00000100'           ; Configura Timer2: Prescaler 1:4
-    movwf   T2CON                 ; Timer2 ligado
-
-    movlw   0x7C                  ; Configura PR2 para definir o período
-                                   ; Período PWM = [(PR2) + 1] * 4 * Tosc * (TMR2 Prescaler)
-                                   ; Para 8 kHz: PR2 = ((1/8k)/(4*0.4e-6*4))-1 = 124 (0x7C)
-    BANKSEL PR2    
-    movwf   PR2                   ; Define período do PWM
-
-    banksel CCP1CON
-    movlw   d'26'                 ; Duty Cycle inicial = 10% (26/1024 de ciclo total)
-    movwf   CCPR1L                ; Bits mais significativos do duty cycle
-    movlw   b'00001100'           ; Bits menos significativos para duty cycle
-    movwf   CCP1CON
-
-    bsf     CCP1CON, CCP1M3       ; Configura CCP1 no modo PWM
-    bsf     CCP1CON, CCP1M2       
-
-    bsf     T2CON, TMR2ON         ; Liga Timer2 para iniciar PWM
-
-;------------------------------------------
-; Loop principal
-;------------------------------------------
-MainLoop:
-    btfss   BUTAO_PIN             ; Verifica se o botão foi pressionado
-    goto    MainLoop              ; Se não pressionado, continua no loop
-
-    call    IncrementaDutyCycle   ; Incrementa o duty cycle
-    call    atraso                ; Chama delay para evitar leituras múltiplas
-    goto    MainLoop              ; Retorna ao loop principal
-
-;------------------------------------------
-; Sub-rotinas
-;------------------------------------------
-IncrementaDutyCycle:
-    movlw   d'26'
-    addwf   duty_cycle, F
-
-    movf    duty_cycle, W
-    movwf   CCPR1L                ; Atualiza o duty cycle no registrador CCPR1L
-
-    return
-
-atraso:
-    movlw   d'255'                ; Loop externo
-DelayOuter:
-    movwf   TEMP1
-DelayInner:
-    decfsz  TEMP1, F              ; Decrementa TEMP1
-    goto    DelayInner            ; Continua até TEMP1 zerar
-    decfsz  W, F                  ; Decrementa loop externo
-    goto    DelayOuter            ; Continua até W zerar
-    return
-
-    end
+  
+;******************
+;1 ms delay routine (10 MHz)
+;******************
+d10_1ms
+	movlw	.4			
+	movwf	tempd1		
+dly_1my	movlw	.204	
+	movwf	tempd2		 
+dly_1mx	decfsz	tempd2,1	
+	goto	dly_1mx		
+	clrwdt				  
+	decfsz	tempd1,1			
+	goto	dly_1my		
+	return				
+  
+END
