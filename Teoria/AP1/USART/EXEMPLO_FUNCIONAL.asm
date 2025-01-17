@@ -1,8 +1,8 @@
 #INCLUDE <P16F628A.INC>
 
-; Enviar o conteúdo da porta A para ocomputador por comunicação serial ao ser gerada uma borda de subida no pinoRB0 (ao pressionarmos um botão ligado aesse pino).
+; Enviar o CARACTERE A para ocomputador por comunicação serial ao ser gerada uma borda de subida no pinoRB0 (ao pressionarmos um botão ligado aesse pino).
 ; BAUD RATE 9600 bps, 8 bits, sem paridade e 1 stop-bit.
-; Fosc = 4MHz
+; Fosc = 10MHz
 
 ENVIADO  EQU  0x20
 
@@ -17,7 +17,7 @@ ORG  0x04
 
   
   BANKSEL   TXREG
-  MOVLW	0xFF
+  MOVLW	0x41          ;TABELA ASCII
   MOVWF	TXREG
 
   
@@ -32,7 +32,7 @@ INICIO:
   BSF	INTCON, INTE
   
   BANKSEL   SPBRG
-  MOVLW	d'26'
+  MOVLW	d'65'
   MOVWF	SPBRG
 
   BANKSEL TXSTA
