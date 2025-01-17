@@ -1,0 +1,35 @@
+#INCLUDE <P16F628A.INC>
+    
+ESTADO1	EQU 0x20
+ESTADO2	EQU 0x21
+
+ORG 0
+  GOTO  INICIO
+ORG  4
+  RETFIE
+  
+INICIO:
+    BANKSEL TRISA
+    CLRF    TRISA
+    
+    MOVLW   OxFF
+    MOVWF   TRISB
+    
+    BANKSEL ESTADO1
+    MOVLW   b'00001010'
+    MOVWF   ESTADO1
+    
+    BANKSEL ESTADO2
+    MOVLW   b'00000101'
+    MOVWF   ESTADO2
+    
+MAIN:
+    
+    
+    
+    
+    GOTO MAIN
+    
+    
+END
+    
