@@ -1,81 +1,145 @@
 #INCLUDE <P16F628A.INC>
 
-#DEFINE LED1   PORTB,6        ; Define LED1 no pino RB6
-#DEFINE LED2   PORTB,7        ; Define LED2 no pino RB7
-
-at_x        EQU   0x70        ; Registrador para contador de atraso externo
-at_tmp1     EQU   0x71        ; Registrador para contador de atraso interno
-at_tmp2     EQU   0x72        ; Registrador para contador mais interno
-
-temp        EQU   0x74        ; Registrador temporário usado para armazenar dados recebidos
-
-;------------------------------------------
-; Vetores de Reset e Interrupção
-;------------------------------------------
-ORG 0                  ; Vetor de reset
-GOTO INI               ; Salta para o início do programa
-
-ORG 4                  ; Vetor de interrupção
-RETFIE                 ; Retorna da interrupção
-
-;------------------------------------------
-; Inicialização do Programa
-;------------------------------------------
-INI:
-
-    ; Configuração de TRISA e TRISB
-    BANKSEL TRISA      ; Seleciona o banco para acessar TRISA
-    movlw 0xff         ; Configura todos os pinos de PORTA como saída
-    movwf TRISA        ; Escreve no registrador TRISA
-    movlw b'00000010'         ; Configura os pinos RB0-RB5 como entrada e RB6-RB7 como saída
-    movwf TRISB        ; Escreve no registrador TRISB
-
-    ; Configuração do módulo UART
-    BANKSEL SPBRG      ; Seleciona o banco para acessar SPBRG
-    movlw d'31'          ; Configura baud rate para 19200 (exemplo)
-    movwf SPBRG        ; Escreve no registrador SPBRG
+CONTA	EQU   0x20
+DUTY_CYCLE  EQU	0x21
+DUTY_CYCLE_CCPR1L   EQU	0x22
+DUTY_CYCLE_CCP1CON  EQU	0x23
+  
+DUTY_CYCLE_25	EQU 0x24
+DUTY_CYCLE_50	EQU 0x25
+DUTY_CYCLE_90	EQU 0x26 
     
-    BANKSEL TXSTA      ; Seleciona o banco para acessar TXSTA
-    bsf  TXSTA,TXEN    ; Habilita o transmissor UART
-    bsf  TXSTA,BRGH    ; Configura alta velocidade UART
+ORG  0x00
+     
+  GOTO INICIO
+  
+ORG  0x04
+
+  RETFIE
+
+INICIO:
+  BANKSEL PR2
+  MOVLW  d'155'
+  MOVWF  PR2
+
+  BANKSEL  CCP1CON
+  MOVLW  b'00001111'
+  MOVWF  CCP1CON
+
+  BANKSEL  CCPR1L
+  MOVLW  b'00000111'
+  MOVWF  CCPR1L
+  
+  BANKSEL   DUTY_CYCLE
+  MOVLW	d'0'
+  MOVWF	DUTY_CYCLE
+
+  BANKSEL  T2CON
+  MOVLW  b'00000100'
+  MOVWF  T2CON	
+  
+  BANKSEL   OPTION_REG
+  BSF	OPTION_REG, 7
+  
+  ; Configuração de TRISA e TRISB
+  BANKSEL TRISB
+  CLRF	TRISB
+
+   ; Configuração do módulo UART
+   BANKSEL SPBRG      ; Seleciona o banco para acessar SPBRG
+   movlw d'325'          ; Configura baud rate para 19200 (exemplo)
+   movwf SPBRG        ; Escreve no registrador SPBRG
     
-    BANKSEL RCSTA      ; Seleciona o banco para acessar RCSTA
-    bsf  RCSTA,SPEN    ; Habilita o módulo UART
-    bsf  RCSTA,CREN    ; Habilita recepção contínua
+   BANKSEL TXSTA      ; Seleciona o banco para acessar TXSTA
+   bsf  TXSTA,TXEN    ; Habilita o transmissor UART
+   bsf  TXSTA,BRGH    ; Configura alta velocidade UART
+    
+   BANKSEL RCSTA      ; Seleciona o banco para acessar RCSTA
+   bsf  RCSTA,SPEN    ; Habilita o módulo UART
+   bsf  RCSTA,CREN    ; Habilita recepção contínua
 
-    ; Configuração do registrador INTCON
-    BANKSEL INTCON     ; Seleciona o banco para acessar INTCON
-    movlw 0x00         ; Desabilita todas as interrupções
-    movwf INTCON       ; Escreve no registrador INTCON
-
-;------------------------------------------
-; Loop Principal
-;------------------------------------------
+   ; Configuração do registrador INTCON
+   BANKSEL INTCON     ; Seleciona o banco para acessar INTCON
+   CLRF	INTCON
+  
 MAIN:
-    ; Verifica se há dado recebido pela UART
-    BANKSEL PIR1       ; Seleciona o banco para acessar PIR1
-    BTFSC PIR1,RCIF    ; Testa se o bit RCIF (flag de recepção UART) está setado
-    ;BANKSEL   TXREG
-    ;CLRF    TXREG
-    CALL  rec_e_trata  ; Se RCIF = 1, chama a sub-rotina para tratar o dado recebido
-
-    GOTO MAIN          ; Retorna ao início do loop principal
-
-;------------------------------------------
-; Sub-rotina para Recepção e Tratamento do Dado
-;------------------------------------------
-rec_e_trata:
     
+  ; Verifica se há dado recebido pela UART
+   BANKSEL PIR1       ; Seleciona o banco para acessar PIR1
+   BTFSC PIR1,RCIF    ; Testa se o bit RCIF (flag de recepção UART) está setado
+   CALL  rec_e_trata  ; Se RCIF = 1, chama a sub-rotina para tratar o dado recebido
  
-    BANKSEL RCREG      ; Seleciona o banco para acessar RCREG
-    INCF RCREG,	W        ; Move o dado recebido de RCREG para WREG
+  GOTO MAIN
+
+  
+  rec_e_trata
+    BANKSEL RCREG
+    MOVF    RCREG, W
+    SUBLW   0x41	;A em hexa
     
-    BANKSEL   TXREG
-    MOVWF	TXREG
-    CLRW
+    BTFSC   STATUS, Z
+    GOTO    RECEBEU_A
+    
+    BANKSEL RCREG
+    MOVF    RCREG, W
+    SUBLW   0x42	;b em hexa
+    
+    BTFSC   STATUS, Z
+    GOTO    RECEBEU_B
+    
+    BANKSEL RCREG
+    MOVF    RCREG, W
+    SUBLW   0x43	;c em hexa
+    
+    BTFSC   STATUS, Z
+    GOTO    RECEBEU_C
+    
+    return
+    
+    RECEBEU_A:
+	MOVLW	d'156'
+	call grava_pwm
+	return
+    
+    RECEBEU_B:
+	MOVLW	d'312'
+	call grava_pwm
+	return
+	
+    RECEBEU_C:
+	MOVLW	d'562'
+	call grava_pwm
+	return
+    
 
+	grava_pwm
+	    BANKSEL   DUTY_CYCLE
+	    
+	    MOVWF	DUTY_CYCLE
 
-    return             ; Retorna para o chamador
+	    MOVF	DUTY_CYCLE, W		; Armazena o valor do duty cycle atual em W
+	    MOVWF	DUTY_CYCLE_CCPR1L	; Move de W pra DUTY_CYCLE_CCPR1L
+	    RRF DUTY_CYCLE_CCPR1L, 1	; Rotaciona pra direita
+	    RRF DUTY_CYCLE_CCPR1L, 1  
 
+	    MOVF	DUTY_CYCLE_CCPR1L, W	; Move o conteúdo do registrador (já rotacionado 2 casas pra direita)
 
-END                     ; Indica o fim do programa
+	    BANKSEL CCPR1L
+	    MOVWF	CCPR1L			; Move o conteúdo pra ajuste do duty cycle
+
+	    ; Coloca o conteudo dos dois bits menos significativos nos bits 4 e 5 do registrador ccp1con
+
+	    BANKSEL   DUTY_CYCLE
+	    BTFSS	DUTY_CYCLE, 1
+	    BCF	CCP1CON, 5
+	    BTFSC	DUTY_CYCLE, 1
+	    BSF	CCP1CON, 5
+
+	    BTFSS	DUTY_CYCLE, 0
+	    BCF	CCP1CON, 4
+	    BTFSC	DUTY_CYCLE, 0
+	    BSF	CCP1CON, 4
+	return
+    return				
+  
+END
