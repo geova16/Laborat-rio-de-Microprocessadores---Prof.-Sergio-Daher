@@ -62,7 +62,7 @@ MAIN:
     
   ; Verifica se há dado recebido pela UART
    BANKSEL PIR1       ; Seleciona o banco para acessar PIR1
-   BTFSC PIR1,RCIF    ; Testa se o bit RCIF (flag de recepção UART) está setado
+   ;BTFSC PIR1,RCIF    ; Testa se o bit RCIF (flag de recepção UART) está setado
    CALL  rec_e_trata  ; Se RCIF = 1, chama a sub-rotina para tratar o dado recebido
  
   GOTO MAIN
