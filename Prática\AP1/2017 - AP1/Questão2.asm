@@ -12,7 +12,7 @@ INICIO:
     BANKSEL TRISA
     CLRF    TRISA
     
-    MOVLW   OxFF
+    MOVLW   0xFF
     MOVWF   TRISB
     
     BANKSEL ESTADO1
@@ -24,6 +24,30 @@ INICIO:
     MOVWF   ESTADO2
     
 MAIN:
+   
+    BANKSEL PORTB
+    MOVF    PORTB, W
+    
+    BANKSEL ESTADO1
+    SUBWF   ESTADO1, W
+    
+    BANKSEL PORTA
+    BTFSC   STATUS, Z
+    BSF	    PORTA, 0
+    
+    BANKSEL PORTB
+    MOVF    PORTB, W
+    
+    BANKSEL ESTADO2
+    SUBWF   ESTADO2, W
+    
+    BANKSEL PORTA
+    BTFSC   STATUS, Z
+    BSF	    PORTA, 0
+    
+    BTFSS   STATUS, Z
+    BCF	    PORTA, 0
+    
     
     
     
