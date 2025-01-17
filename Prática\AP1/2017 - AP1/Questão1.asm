@@ -1,4 +1,4 @@
-#INCLUDE <PIC16F628A.INC>
+#INCLUDE <P16F628A.INC>
 CONTA EQU 0x20 ; Variável pra armazenar a quantidade de estouros
 CONTADOR EQU 0x21
 CONTADOR_AUX	EQU 0x22
@@ -22,14 +22,20 @@ ORG 4
     BANKSEL CONTADOR
     INCF    CONTADOR, F	    ; Incrementa o contador binário
     
-    BTFSC   CONTADOR, 1	    ; Verifica se o bit 1 foi setado 
-    GOTO RESETA_CONTADOR    ; Se está estado --> Contador = 2 --> Reseta contadir
+    MOVLW   b'00000011'
+    
+    SUBWF   CONTADOR, W	    ; Subtrai CONTADOR de 3 para verificar se é 3
+    
+    BTFSC   STATUS, Z	    ; Verifica se a subtração é igual a 0
+    CLRF    CONTADOR	    ; Se for o --> contador é 3 --> Limpa contador
     
     MOVF    CONTADOR, W
     
-    
     BANKSEL CONTADOR_AUX
+    CLRF    CONTADOR_AUX
     MOVWF   CONTADOR_AUX
+    
+    ;ROTACIONA O CONTADOR_AUX 4 CASAS PRA ESQUERDA PARA SE ADEQUAR A RB4 E RB5
     
     RLF CONTADOR_AUX, F
     RLF	CONTADOR_AUX, F
@@ -41,16 +47,11 @@ ORG 4
     BANKSEL PORTB
     MOVWF   PORTB
     
-    RESETA_CONTADOR:
-	MOVLW	0x00
-	MOVWF	CONTADOR
-    
     RETFIE
 
 INICIO:
     BANKSEL INTCON
-    MOVLW b'10100000' ; (BSF INTCON, GIE - Habilita interrupção global e BSF
-    INTCON, T0IE - Habilita interrupção do Timer0)
+    MOVLW b'10100000' ; (BSF INTCON, GIE - Habilita interrupção global e BSF INTCON, T0IE ;- Habilita interrupção do Timer0)
     MOVWF INTCON
     
     BANKSEL OPTION_REG
@@ -69,3 +70,5 @@ INICIO:
 
 MAIN:
     GOTO MAIN
+    
+END
