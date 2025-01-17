@@ -4,10 +4,6 @@ CONTA	EQU   0x20
 DUTY_CYCLE  EQU	0x21
 DUTY_CYCLE_CCPR1L   EQU	0x22
 DUTY_CYCLE_CCP1CON  EQU	0x23
-  
-DUTY_CYCLE_25	EQU 0x24
-DUTY_CYCLE_50	EQU 0x25
-DUTY_CYCLE_90	EQU 0x26 
     
 ORG  0x00
      
@@ -45,22 +41,22 @@ INICIO:
   BANKSEL TRISB
   CLRF	TRISB
 
-   ; Configuração do módulo UART
-   BANKSEL SPBRG      ; Seleciona o banco para acessar SPBRG
-   movlw d'325'          ; Configura baud rate para 19200 (exemplo)
-   movwf SPBRG        ; Escreve no registrador SPBRG
+  ; Configuração do módulo UART
+  BANKSEL SPBRG      ; Seleciona o banco para acessar SPBRG
+  movlw d'325'          ; Configura baud rate para 19200 (exemplo)
+  movwf SPBRG        ; Escreve no registrador SPBRG
     
-   BANKSEL TXSTA      ; Seleciona o banco para acessar TXSTA
-   bsf  TXSTA,TXEN    ; Habilita o transmissor UART
-   bsf  TXSTA,BRGH    ; Configura alta velocidade UART
+  BANKSEL TXSTA      ; Seleciona o banco para acessar TXSTA
+  bsf  TXSTA,TXEN    ; Habilita o transmissor UART
+  bsf  TXSTA,BRGH    ; Configura alta velocidade UART
     
-   BANKSEL RCSTA      ; Seleciona o banco para acessar RCSTA
-   bsf  RCSTA,SPEN    ; Habilita o módulo UART
-   bsf  RCSTA,CREN    ; Habilita recepção contínua
+  BANKSEL RCSTA      ; Seleciona o banco para acessar RCSTA
+  bsf  RCSTA,SPEN    ; Habilita o módulo UART
+  bsf  RCSTA,CREN    ; Habilita recepção contínua
 
-   ; Configuração do registrador INTCON
-   BANKSEL INTCON     ; Seleciona o banco para acessar INTCON
-   CLRF	INTCON
+  ; Configuração do registrador INTCON
+  BANKSEL INTCON     ; Seleciona o banco para acessar INTCON
+  CLRF	INTCON
   
 MAIN:
     
@@ -112,7 +108,10 @@ MAIN:
 	return
     
 
-	grava_pwm
+	
+    return				
+  
+grava_pwm
 	    BANKSEL   DUTY_CYCLE
 	    
 	    MOVWF	DUTY_CYCLE
@@ -140,6 +139,5 @@ MAIN:
 	    BTFSC	DUTY_CYCLE, 0
 	    BSF	CCP1CON, 4
 	return
-    return				
-  
+    
 END
