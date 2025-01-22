@@ -73,6 +73,29 @@ mov BX, handle    ; Handle do arquivo
 int 21h           ; Chama a interrupção
 
 ; Encerrar o programa (AH = 4Ch)
+
+; Esperar por uma tecla (AH = 00h)
+mov AH, 00h       ; Função 00h: Esperar por uma tecla
+int 16h           ; Chama a interrupção
+; Resultado: Código ASCII da tecla em AL
+
+; Verificar se uma tecla foi pressionada (AH = 01h)
+mov AH, 01h       ; Função 01h: Verificar tecla
+int 16h           ; Chama a interrupção
+; Resultado: ZF = 0 se uma tecla foi pressionada, caractere em AL
+
+
+; Ler o relógio do sistema (AH = 00h)
+mov AH, 00h       ; Função 00h: Ler relógio
+int 1Ah           ; Chama a interrupção
+; Resultado: Contadores de relógio em CX:DX
+
+; Ajustar o relógio do sistema (AH = 01h)
+mov AH, 01h       ; Função 01h: Ajustar relógio
+mov CX, horas     ; Define horas em CX
+mov DX, minutos   ; Define minutos em DX
+int 1Ah           ; Chama a interrupção
+
 mov AH, 4Ch       ; Função 4Ch: Encerrar programa
 mov AL, 00h       ; Código de saída (0)
 int 21h           ; Termina o programa
