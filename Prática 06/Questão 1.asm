@@ -1,49 +1,33 @@
-org 100h
-; Esta diretiva define a origem do codigo. No formato .COM, o codigo comeca na posicao 100h.
+org 100h        ; Define a origem do programa para a execução no endereço 100h,
+                 ; padrão para programas .COM no DOS.
 
-;mov DL, 'O'
-; Move o caractere '1' (representado por seu valor ASCII, 49) para o registrador DL.
-; DL eh usado para armazenar o caractere que sera enviado a funcao de saida de caractere.
+; Início do programa
+mov AH, 2        ; Define a função 2 do interrupt 21h, que exibe um caractere na tela.
+mov DL, 'O'      ; Carrega o caractere 'O' no registrador DL, que será exibido.
+int 21h          ; Chama o interrupt 21h para executar a função definida (mostrar o caractere).
 
-;mov AH, 2
-; Configura o registrador AH com o valor 2.
-; Na interrupção 21h do DOS, AH = 2 indica a função "Exibir caractere na saída padrão".
+mov DL, 'I'      ; Carrega o caractere 'I' no registrador DL.
+int 21h          ; Exibe o caractere 'I' na tela.
 
-;int 21h
-; Chama a interrupção 21h do DOS, que executa a função de exibição de caractere.
-; O caractere em DL ('1') será mostrado no console.  
-       
-mov AH, 2
-       
-mov DL, 'O' 
-int 21h     
+mov DL, ','      ; Carrega o caractere ',' no registrador DL.
+int 21h          ; Exibe o caractere ',' na tela.
 
-mov DL, 'I' 
-int 21h       
+mov DL, ' '      ; Carrega o caractere de espaço no registrador DL.
+int 21h          ; Exibe o espaço na tela.
 
-mov DL, ',' 
-int 21h       
+mov DL, 'M'      ; Carrega o caractere 'M' no registrador DL.
+int 21h          ; Exibe o caractere 'M' na tela.
 
-mov DL, ' ' 
-int 21h
-mov DL, 'M' 
-int 21h
-mov DL, 'U' 
-int 21h
-mov DL, 'N' 
-int 21h
-mov DL, 'D' 
-int 21h
-mov DL, 'O' 
-int 21h
+mov DL, 'U'      ; Carrega o caractere 'U' no registrador DL.
+int 21h          ; Exibe o caractere 'U' na tela.
 
-mov AH, 0
-; Configura o registrador AH com o valor 0.
-; Na interrupção 16h, AH = 0 indica a função "Esperar por entrada de tecla" (leitura de tecla).
+mov DL, 'N'      ; Carrega o caractere 'N' no registrador DL.
+int 21h          ; Exibe o caractere 'N' na tela.
 
-int 16h
-; Chama a interrupção 16h, que aguarda até que o usuário pressione uma tecla.
-; O código ASCII da tecla pressionada será armazenado em AL, mas não é usado neste programa.
+mov DL, 'D'      ; Carrega o caractere 'D' no registrador DL.
+int 21h          ; Exibe o caractere 'D' na tela.
 
-ret
-; Retorna ao sistema operacional, finalizando o programa.
+mov DL, 'O'      ; Carrega o caractere 'O' no registrador DL.
+int 21h          ; Exibe o caractere 'O' na tela.
+
+END              ; Indica o fim do programa para o montador.
