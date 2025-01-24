@@ -1,63 +1,28 @@
 org 100h
-; Define a origem do programa em 100h, padrão para programas .COM no DOS.
 
-mov AH, 1
-; Configura o registrador AH com a função 1.
-; A interrupção 21h com AH = 1 lê um caractere do teclado com eco.
+; Lê o primeiro número
+mov AH, 1          ; Configura a função de leitura de caractere (int 21h, AH=1)
+int 21h            ; Lê o caractere digitado do teclado
+sub AL, 48         ; Converte o caractere ASCII para um número decimal (0 a 9)
+mov BL, AL         ; Armazena o primeiro número em BL
 
-int 21h
-; Chama a interrupção 21h do DOS para ler o primeiro caractere.
-; O caractere digitado é armazenado no registrador AL como um valor ASCII.
+; Lê o segundo número
+mov AH, 1          ; Configura a função de leitura de caractere novamente
+int 21h            ; Lê o segundo caractere digitado
+sub AL, 48         ; Converte o segundo caractere ASCII para um número decimal
+mov BH, AL         ; Armazena o segundo número em BH
 
-sub AL, 48
-; Converte o caractere ASCII para um valor decimal.
-; Isso é feito subtraindo 48 (valor ASCII de '0') do valor de AL.
-; Exemplo: Se o caractere lido for '5' (ASCII 53), AL se torna 5.
+; Calcula a soma dos dois números
+add BL, BH         ; Soma os valores armazenados em BL e BH
+mov AL, BL         ; Move o resultado da soma para AL
 
-mov DL, AL
+; Converte o resultado para ASCII
+add AL, 48         ; Converte o número decimal em caractere ASCII
 
+; Exibe o resultado
+mov DL, AL         ; Move o caractere resultante para DL
+mov AH, 2          ; Configura a função de exibição de caractere (int 21h, AH=2)
+int 21h            ; Exibe o caractere na tela
 
-;--------------------------------------------------------------------------
-
-mov AH, 1
-; Configura AH novamente para a função de leitura de caractere do teclado.
-
-int 21h
-; Lê o segundo caractere do teclado e armazena seu valor ASCII em AL.
-
-sub AL, 48
-
-add DL, AL 
-
-mov AL, DL
-
-sub DL, 10
-
-sub AL, DL
-
-mov AH, DL
-
-add AL, 48
-
-add AH, 48
-
-mov CH, AL
-
-mov CL, AH 
-
-
-mov DL, CH
-
-mov AH, 2
-
-int 21h
-
-mov DL, CL
-
-int 21h
-
-
-
-
-.exit
-; Fim do programa. `.exit` seria interpretado como um comando externo ou rótulo.
+; Fim do programa
+ret
