@@ -8,6 +8,11 @@ int 21h            ; Lê o caractere digitado do teclado
 sub AL, 48         ; Converte o caractere ASCII para um número decimal (0 a 9)
 mov BL, AL         ; Armazena o primeiro número em BL
 
+mov AH, 2
+mov DL, '+'
+int 21h
+
+
 ; Lê o segundo número
 mov AH, 1          ; Configura a função de leitura de caractere novamente
 int 21h            ; Lê o segundo caractere digitado
@@ -17,6 +22,12 @@ mov BH, AL         ; Armazena o segundo número em BH
 ; Calcula a soma dos dois números
 add BL, BH         ; Soma os valores armazenados em BL e BH
 mov AL, BL         ; Move o resultado da soma para AL
+
+mov AH, 2
+mov DL, '='
+int 21h
+
+mov AL, BL
 
 ;interrucao dos dois digitos
 
