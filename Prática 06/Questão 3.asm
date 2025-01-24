@@ -38,7 +38,6 @@ jne letran
 
 
 mov AH, 2
-; Configura o registrador AH com o valor 2.
 ; A interrupção 21h com AH = 2 é usada para exibir caracteres no console.
 
 mov DL, 'S'
