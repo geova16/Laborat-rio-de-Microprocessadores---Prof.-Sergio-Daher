@@ -18,26 +18,31 @@ mov BH, AL         ; Armazena o segundo número em BH
 add BL, BH         ; Soma os valores armazenados em BL e BH
 mov AL, BL         ; Move o resultado da soma para AL
 
-; Converte o resultado para ASCII
-add AL, 48         ; Converte o número decimal em caractere ASCII 
+;interrucao dos dois digitos
 
-mov CL, AL
+mov AH, 0
+mov CL, 10
+div CL
+push AX
 
-; Exibe o resultado
-mov AH, 2          ; Configura a função de exibição de caractere (int 21h, AH=2)
-
-mov DL, '='        
-int 21h            ; Exibe o caractere na tela
-mov DL, ' '        
-int 21h            ; Exibe o caractere na tela
-
-mov DL, CL
+   
+mov DL, AL
+add DL, 48
+mov AH, 2
 int 21h
 
+pop AX
+mov DL,AH 
+add DL, 48
+mov AH, 2
+int 21h  
 
-mov DL, ' '
-mov AH, 2  
+mov DL, 10
 int 21h
+
+mov DL, 13
+int 21h
+
 
 jmp ini
 
