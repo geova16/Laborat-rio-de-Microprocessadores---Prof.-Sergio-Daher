@@ -134,11 +134,11 @@ imprime_4d:
     
     ; Imprime a variavel anteriormente armazenada em AX (4 digitos)    
     
-    mov     dl, 100
+    mov     bx, 100
     
-    div     dl               ; Divide AX por 100 - separar o (milhar e centena) da (dezena e unidade)
+    div     bx               ; Divide AX por 100 - separar o (milhar e centena) da (dezena e unidade)
             
-    push    dx               ; Guarda os valores na pilha
+    push    dx               ; Guarda os valores da (dezena e unidade) na pilha (resto da div)
     
     
     
@@ -151,9 +151,9 @@ imprime_4d:
     call    imprime_2d       ; Imprime os dois digitos de AL
     
     
-    pop     ax               ; Recupera os valores guardados na pilha
+    pop     dx               ; Recupera os valores guardados na pilha
     
-    mov     cl, ah           ; Dezena e unidade para CL
+    mov     cl, dl           ; Dezena e unidade para CL
     
     mov     ax, 0
             
