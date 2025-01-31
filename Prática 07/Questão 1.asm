@@ -2,11 +2,11 @@ org 100h
 
 jmp inicio
 
-k   db  234
+k   dw  999
 
 inicio:
 
-mov AL, [k]
+mov AX, [k]
 
 call imprime
 
@@ -14,26 +14,37 @@ call imprime
 
 imprime:
 
-mov AH, 0
 
-mov DL, 100
 
-div DL        ; Divide AX por 100 - separar a centena
+mov BX, 100
 
-mov DL, AL    ; Centena para AL
+div BX        ; Divide AX por 100 - separar a centena
 
-mov CL, AH    ; Dezena e unidade para CL
+mov BX, 0
 
-mov AH, 2     ; Funcionalidade da interrupcao
+mov BX, AX    ; Centena para BX
+
+mov CX, DX    ; Dezena e unidade para CL 
+
+push CX       ; Guarda dezena e unidade na pilha
+
+
+
+mov AH, 2     ; Funcionalidade da interrupcao 
+
+mov DL, AL
 
 add DL, 48    ; Converte a centena para ASCII
 
 int 21h       ; Imprime a centena  
 
 
-mov DL, 10     
+pop CX        ; Recupera dezena e unidade da pilha
 
-mov AL, CL    ; Move a dezena e unidade para AL
+mov AX, CX    ; Move dez e unid para AX
+
+
+mov DL, 10     
 
 mov AH, 0
 
