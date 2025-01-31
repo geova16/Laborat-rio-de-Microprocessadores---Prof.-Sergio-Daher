@@ -83,11 +83,11 @@ ini:
           
     
     
-    mov ah, 1 
+    mov     ah, 1 
     
-    int 21h              ; Le um caractere (trava o codigo)  
+    int     21h              ; Le um caractere (trava o codigo)  
              
-    sub al, 48           ; De ASCII para decimal
+    sub     al, 48           ; De ASCII para decimal
     
     mov     ah, 0
     
@@ -104,28 +104,28 @@ ini:
      
        
     
-    lea dx,quebra_lin 
+    lea     dx,quebra_lin 
     
-    mov ah,9      
+    mov     ah,9      
     
-    int 21h              ; Imprime quebra_lin
+    int     21h              ; Imprime quebra_lin
     
     
-    lea dx,label2 
+    lea     dx,label2 
     
-    mov ah,9  
+    mov     ah,9  
                         
-    int 21h             ; Imprime label2
+    int     21h              ; Imprime label2
     
     
-    pop ax              ; Resgata a soma da pilha
+    pop     ax               ; Resgata a soma da pilha
     
-    mov dx,2
+    mov     dx,2
     
-    mul dx              ; Multiplica a soma por 2
+    mul     dx               ; Multiplica a soma por 2
+            
     
-    
-    call imprime_4d     ; Imprime a soma*2
+    call    imprime_4d       ; Imprime a soma*2
     
     .EXIT       
     
@@ -134,32 +134,32 @@ imprime_4d:
     
     ; Imprime a variavel anteriormente armazenada em AX (4 digitos)    
     
-    mov DL, 100
+    mov     dl, 100
     
-    div DL                       ; Divide AX por 100 - separar o (milhar e centena) da (dezena e unidade)
-    
-    push AX                      ; Guarda os valores na pilha
-    
-    
-    
-    mov CH, AL                   ; Milhar e centena para CH
-    
-    mov AX, 0
-    
-    mov AL, CH                   ; Milhar e centena para AL    
-    
-    call imprime_2d              ; Imprime os dois digitos de AL
+    div     dl               ; Divide AX por 100 - separar o (milhar e centena) da (dezena e unidade)
+            
+    push    dx               ; Guarda os valores na pilha
     
     
-    pop AX                       ; Recupera os valores guardados na pilha
     
-    mov CL, AH                   ; Dezena e unidade para CL
+    mov     ch, al           ; Milhar e centena para CH
     
-    mov AX, 0
+    mov     ax, 0
     
-    mov AL, CL                   ; Dezena e unidade para AL 
+    mov     al, ch           ; Milhar e centena para AL    
     
-    call imprime_2d              ; Imprime os dois digitos de AL
+    call    imprime_2d       ; Imprime os dois digitos de AL
+    
+    
+    pop     ax               ; Recupera os valores guardados na pilha
+    
+    mov     cl, ah           ; Dezena e unidade para CL
+    
+    mov     ax, 0
+            
+    mov     al, cl           ; Dezena e unidade para AL 
+    
+    call    imprime_2d       ; Imprime os dois digitos de AL
     
     ret
     
@@ -168,27 +168,27 @@ imprime_2d:
 
     ; Imprime o que ta em AL
 
-    mov ah,0 
+    mov     ah,0 
     
-    mov dl,10  
+    mov     dl,10  
     
-    div dl   
+    div     dl   
     
-    mov dl,al 
+    mov     dl,al 
+            
+    mov     cl,ah
     
-    mov cl,ah
+    mov     ah,2 
     
-    mov ah,2 
+    add     dl,48 
     
-    add dl,48 
-    
-    int 21h  
+    int     21h  
     
     
-    mov dl,cl 
+    mov     dl,cl 
     
-    add dl,48 
+    add     dl,48 
     
-    int 21h   
+    int     21h   
     
-    ret  
+    ret   
