@@ -1,0 +1,118 @@
+org 100h       
+
+jmp ini         
+
+    label1 db "tempo = $"        ; Declaracao de string (palavra)           
+                          
+    label2 db "dist. = $"
+    
+    quebra_lin db 0x0d,0x0a,'$'
+    
+    tempo dw 3798                ; Varivavel 16 bits
+    
+    dist dw 9922
+
+
+ini:
+
+
+    lea dx,label1                ; Carrega o endereco da string em DX
+    
+    mov ah,9                     ; 09h imprime uma string na tela.
+    
+    int 21h                      ; Imprime a string
+                               
+    
+    mov ax, 0
+                               
+    mov ax,[tempo]               ; Move o valor tempo para AX (3798)
+    
+    call imprime_4d  
+    
+    
+    lea dx,quebra_lin            ; Carrega o endereco da string em DX
+    
+    mov ah,9                     ; ...
+    
+    int 21h                      ; ...
+    
+    
+    lea dx,label2                ; Carrega o endereco da string em DX
+    
+    mov ah,9                     ; ...
+    
+    int 21h                      ; ...
+    
+    
+    mov ax, 0
+    
+    mov ax,[dist]                ; Move o valor tempo para AX (3798) 
+    
+    call imprime_4d
+    
+    .EXIT
+
+
+imprime_4d:
+    
+    ; Imprime a variavel anteriormente armazenada em AX (4 digitos)    
+    
+    mov DL, 100
+    
+    div DL                       ; Divide AX por 100 - separar o (milhar e centena) da (dezena e unidade)
+    
+    push AX                      ; Guarda os valores na pilha
+    
+    
+    
+    mov CH, AL                   ; Milhar e centena para CH
+    
+    mov AX, 0
+    
+    mov AL, CH                   ; Milhar e centena para AL    
+    
+    call imprime_2d              ; Imprime os dois digitos de AL
+    
+    
+    pop AX                       ; Recupera os valores guardados na pilha
+    
+    mov CL, AH                   ; Dezena e unidade para CL
+    
+    mov AX, 0
+    
+    mov AL, CL                   ; Dezena e unidade para AL 
+    
+    call imprime_2d              ; Imprime os dois digitos de AL
+    
+    ret
+    
+
+imprime_2d: 
+
+    ; Imprime o que ta em AL
+
+    mov ah,0 
+    
+    mov dl,10  
+    
+    div dl   
+    
+    mov dl,al 
+    
+    mov cl,ah
+    
+    mov ah,2 
+    
+    add dl,48 
+    
+    int 21h  
+    
+    
+    mov dl,cl 
+    
+    add dl,48 
+    
+    int 21h   
+    
+    ret 
+    
