@@ -1,37 +1,31 @@
 org 100h
 jmp start
 
-vec1 db 9, 9, 9, 9       ; Vetor 1
-vec2 db 9, 9, 9, 9       ; Vetor 2
-
-resultado dw 0h
+vec1 db 9, 2, 5, 6       ; Vetor 1
+vec2 db 9, 9, 3, 1       ; Vetor 2
+vec3 db ?, ?, ?, ?       ; Vetor onde será armazenada a soma
 
 label1 db "Vetor 1 = [ $"
 label2 db "Vetor 2 = [ $"
-label3 db "Produto = $"
+label3 db "Soma = [ $"
 label4 db " ]$"
-label5 db ", $" 
+label5 db ", $"
 quebra_lin db 0x0D, 0x0A, '$'   ; Quebra de linha
 
 start:
     lea si, vec1          ; Carrega o endereço base de vec1
-    lea bp, vec2          ; Carrega o endereço base de vec2
-    
+    lea bx, vec2          ; Carrega o endereço base de vec2
+    lea di, vec3          ; Carrega o endereço base de vec3
     mov cx, 4             ; Loop para 4 elementos
 
-produto:
+sum:
     mov al, [si]          ; Carrega um byte de vec1
-    mov bl, [bp]          ; Carrega 1 byte de vec1
-    mul bl
-             
-              
-    add [resultado], ax          
-    
+    add al, [bx]          ; Soma com o correspondente em vec2
     mov [di], al          ; Armazena a soma em vec3
     inc si                ; Avança para o próximo elemento de vec1
-    inc bp                ; Avança para o próximo elemento de vec2
-    
-loop produto                  ; Repetir até CX = 0
+    inc bx                ; Avança para o próximo elemento de vec2
+    inc di                ; Avança para o próximo elemento de vec3
+loop sum                  ; Repetir até CX = 0
 
 
 principal:
@@ -69,32 +63,38 @@ principal:
     mov ah, 9
     int 21h
 
-    ; Imprime Produto
+    ; Imprime Soma
     lea dx, label3
     mov ah, 9
-    int 21h  
-    
-    mov ax, 0
-    
-    mov dx, 0
-    
-    mov ax, [resultado]
-    
-    call imprime_3d
+    int 21h
 
- 
+    lea si, vec3
+    mov cx, 4
+    call imprime_vet
+
+    lea dx, label4
+    mov ah, 9
+    int 21h
+
+    lea dx, quebra_lin
+    mov ah, 9
+    int 21h
 
 .EXIT  
 
 
 imprime_vet:
+    
     mov al, [si]          ; Carrega o byte atual de vec1, vec2 ou vec3
+    
     call converte_e_imprime
 
     inc si                ; Avança para o próximo elemento
 
     lea dx, label5        ; Imprime ", "
+    
     mov ah, 9
+    
     int 21h
 
 loop imprime_vet           ; Decrementa CX e repete se ainda houver elementos
@@ -102,76 +102,50 @@ ret
 
 
 converte_e_imprime:
-    push dx               ; Salva DX
 
-    and al, 0Fh           ; Mantém apenas os 4 bits menos significativos
     cmp al, 9
-    jg hex_conversion
+    
+    jg imprime_2d 
+    
     add al, 48            ; Converte 0-9 para ASCII ('0' = 48)
-    jmp print_char
-
-hex_conversion:
-    add al, ('A' - 10)    ; Converte 10-15 para 'A'-'F'
-
-print_char:
-    mov ah, 2             ; Configura a função 2 do DOS (saída de caractere)
-    mov dl, al            ; Move o caractere ASCII para DL
-    int 21h               ; Exibe o caractere
-
-    pop dx                ; Restaura DX
+    
+    mov dl, al
+    
+    mov ah, 2
+    
+    int 21h 
+    
     ret
 
+imprime_2d: 
 
-imprime_3d:
-
-
-    mov BX, 100
+    mov ah, 0
     
-    div BX        ; Divide AX por 100 - separar a centena
+    ;sub al,48 
     
-    mov BX, AX    ; Centena para BX
+    mov dl,10  
     
-    mov CX, DX    ; Dezena e unidade para CL 
+    div dl   
     
-    push CX       ; Guarda dezena e unidade na pilha
+    mov dl,al 
     
+    push ax
     
+    mov ah,2 
     
-    mov AH, 2     ; Funcionalidade da interrupcao 
+    add dl,48 
     
-    mov DL, AL
+    int 21h  
     
-    add DL, 48    ; Converte a centena para ASCII
+    pop ax
     
-    int 21h       ; Imprime a centena  
+    mov dl,ah 
     
+    add dl,48 
     
-    pop CX        ; Recupera dezena e unidade da pilha
+    mov ah, 2
     
-    mov AX, CX    ; Move dez e unid para AX
-    
-    
-    mov DL, 10     
-    
-    mov AH, 0
-    
-    div DL        ; Divide AX por 10 - separa a dezena
-    
-    mov DL, AL    ; Dezena para AL
-    
-    mov CL, AH    ; Unidade para CL
-    
-    mov AH, 2     ; Funcionalidade da interrupcao
-    
-    add DL, 48    ; Converte a dezena para ASCII
-    
-    int 21h       ; Imprime a dezena
-    
-    
-    add CL, 48    ; Converte a unidade para ASCII
-    
-    mov DL, CL    ; Imprime a unidade
-    
-    int 21h
-    
+    int 21h 
+     
+     
     ret
