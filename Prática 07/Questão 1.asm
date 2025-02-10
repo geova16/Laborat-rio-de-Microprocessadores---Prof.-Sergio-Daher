@@ -10,66 +10,45 @@ inicio:
 
 mov AX, [k]
 
-call imprime
+call PRINT_DECIMAL
 
 .exit
       
       
       
-imprime:
+;--------------------------------------------------------------
+; Função PRINT_DECIMAL
+; Entrada: AX contém o número decimal de 3 dígitos a ser exibido
+;--------------------------------------------------------------
+PRINT_DECIMAL PROC
+    PUSH AX
+    PUSH BX
+    PUSH CX
+    PUSH DX
 
+    MOV CX, 10         ; Base 10
+    MOV BX, 0          ; Contador de dígitos armazenados
 
-    mov BX, 100
-    
-    div BX        ; Divide AX por 100 - separar a centena
-    
-    mov BX, AX    ; Centena para BX
-    
-    mov CX, DX    ; Dezena e unidade para CL 
-    
-    push CX       ; Guarda dezena e unidade na pilha
-    
-    
-    
-    mov AH, 2     ; Funcionalidade da interrupcao 
-    
-    mov DL, AL
-    
-    add DL, 48    ; Converte a centena para ASCII
-    
-    int 21h       ; Imprime a centena  
-    
-    
-    pop CX        ; Recupera dezena e unidade da pilha
-    
-    mov AX, CX    ; Move dez e unid para AX
-    
-    
-    mov DL, 10     
-    
-    mov AH, 0
-    
-    div DL        ; Divide AX por 10 - separa a dezena
-    
-    mov DL, AL    ; Dezena para AL
-    
-    mov CL, AH    ; Unidade para CL
-    
-    mov AH, 2     ; Funcionalidade da interrupcao
-    
-    add DL, 48    ; Converte a dezena para ASCII
-    
-    int 21h       ; Imprime a dezena
-    
-    
-    add CL, 48    ; Converte a unidade para ASCII
-    
-    mov DL, CL    ; Imprime a unidade
-    
-    int 21h
-    
-    ret
-                                   
-                                   
-                                
+CONVERT_LOOP:
+    MOV DX, 0          ; Limpa DX antes da divisão
+    DIV CX             ; AX / 10, resultado em AX, resto em DX
+    ADD DL, '0'        ; Converte número para caractere ASCII
+    PUSH DX            ; Armazena o caractere na pilha
+    INC BX             ; Incrementa contador de dígitos
+    TEST AX, AX        ; Verifica se AX é zero
+    JNZ CONVERT_LOOP   ; Se não for zero, continua dividindo
+
+PRINT_LOOP:
+    POP DX             ; Recupera dígito convertido
+    MOV AH, 02H
+    INT 21H            ; Imprime caractere
+    DEC BX             ; Decrementa contador de caracteres
+    JNZ PRINT_LOOP     ; Continua imprimindo até esvaziar a pilha
+
+    POP DX
+    POP CX
+    POP BX
+    POP AX
+    RET
+PRINT_DECIMAL ENDP
                                
