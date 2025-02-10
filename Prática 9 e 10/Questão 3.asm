@@ -1,3 +1,4 @@
+#start=thermometer.exe#
 org 100h
 
 jmp start    
