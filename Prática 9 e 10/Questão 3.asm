@@ -1,97 +1,56 @@
-#start=thermometer.exe#      
-
 org 100h
 
-jmp start   
+jmp start    
 
-quebra_lin db 0x0d,0x0a,'$'
-
+quebra_lin db 0x0D, 0x0A, '$'
 fa db ' F$'
-
 ce db ' C$'
 
 start: 
-
- in AL,125      ; Le o valor do endereco I/O 125 (temperatura) 
- 
- push AX 
- 
- push AX       
- 
- 
- call PRINT_DECIMAL
- 
- 
- lea     dx, ce 
+    in AL, 125       ; Le o valor do endereco I/O 125 (temperatura) 
+    push AX 
+    push AX       
+    call PRINT_DECIMAL
     
- mov     ah, 9
+    lea dx, ce 
+    mov ah, 9
+    int 21h              ; Imprime " C"
     
- int     21h              ; Imprime label1 
- 
- 
- lea     dx, quebra_lin 
-    
- mov     ah, 9
-    
- int     21h              ; Imprime label1
+    lea dx, quebra_lin 
+    mov ah, 9
+    int 21h              ; Quebra de linha
   
- 
- pop  AX 
-             
- call CONVERTE   
- 
- call PRINT_DECIMAL 
- 
- 
- lea     dx, fa 
+    pop AX 
+    call CONVERTE   
+    call PRINT_DECIMAL 
     
- mov     ah, 9
+    lea dx, fa 
+    mov ah, 9
+    int 21h              ; Imprime " F"
     
- int     21h              
- 
- 
- lea     dx, quebra_lin 
-    
- mov     ah, 9
-    
- int     21h              
- 
+    lea dx, quebra_lin 
+    mov ah, 9
+    int 21h              ; Quebra de linha
 
+    pop AX
+    cmp AL, 22      ; Compara a temperatura com 22
+    jl low         ; Se temperatura < 22, vai para "low"
+    cmp AL, 55      ; Se 22 <= temperatura <= 55, continua
+    jle ok    
+    jg high       
 
-
-
- pop AX
- 
- cmp AL,22      ; Compara a temperatura com 22
- 
- jl low         ; temperatura < 22 --> jmp para low
- 
- cmp AL,55      ; 55 > temperatura > 22 --> jmp para high
- 
- jle ok    
- 
- jg high       
- 
 low:      
-                       
- mov AL,1     
- 
- out 127,AL      ; mov 1 para a porta enderacada em 127 (queimador) - aumenta a temperatura
- 
- jmp ok          ; retorna ao inicio
+    mov AL, 1     
+    out 127, AL   ; Liga o queimador (aumenta a temperatura)
+    jmp ok        
 
 high:    
-
- mov AL,0 
- 
- out 127,AL
+    mov AL, 0 
+    out 127, AL   ; Desliga o queimador (diminui a temperatura)
 
 ok: 
+    jmp start 
 
- jmp start 
- 
- 
- 
 ;--------------------------------------------------------------
 ; Função PRINT_DECIMAL
 ; Entrada: AX contém o número decimal de 3 dígitos a ser exibido
@@ -128,35 +87,28 @@ PRINT_LOOP:
     RET
 PRINT_DECIMAL ENDP  
 
-
 ;--------------------------------------------------------------
-; Função converte celcius para decimal
-; Entrada: AX contém o a temperatura em celcius
-; Saida: AX contem a temperatura em farenheint              4
-; °F = °(C * 9/5) + 32
-
+; Função CONVERTE (Converte Celsius para Fahrenheit)
+; Entrada: AX contém a temperatura em Celsius
+; Saída: AX contém a temperatura em Fahrenheit
+; Fórmula: °F = (°C * 9 / 5) + 32
 ;--------------------------------------------------------------
 CONVERTE PROC
     PUSH BX
     PUSH CX
     PUSH DX
     
-    mov ah, 0
+    MOV AH, 0      
+    MOV BX, 9      
+    MUL BX         ; AX = AX * 9
     
-    mov bx, 9
+    MOV BX, 5      
+    DIV BX         ; AX = AX / 5
     
-    mul bx
-    
-    mov bx, 5
-    
-    div bx
-    
-    add al, 32
- 
+    ADD AL, 32     ; AX = AX + 32
     
     POP DX
     POP CX
     POP BX
     RET    
-    
 CONVERTE ENDP
