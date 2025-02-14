@@ -1,122 +1,192 @@
 #start=thermometer.exe#
+
 org 100h
 
-jmp start    
+jmp inicio    
 
-quebra_lin db 0x0D, 0x0A, '$'
-fa db ' F$'
-ce db ' C$'   
+quebra_lin db 0x0d, 0x0a, '$'
+fa db ' ', 0xF8, 'F $'
+ce db ' ', 0xF8, 'C $' 
 
-teste1 db 'Escreva a temperatura minima'
+temp_max db 11
+              
+temp_min db 11
 
-temp_min equ 20
+pergunta1 db 'Digite a temperatura maxima ( 4 digitos ): $' 
 
-temp_max equ 30 
+pergunta2 db 'Digite a temperatura minima ( 4 digitos ): $'
+
+leitura db 0, 0, 0, 0 
 
 
+inicio:
+    lea dx, pergunta1 
+    mov ah, 9
+    int 21h 
+               
+    call le_4digitos
+                
+    lea dx, quebra_lin 
+    mov ah, 9
+    int 21h              
+                
+    lea dx, pergunta2 
+    mov ah, 9
+    int 21h     
+    
+    mov ah, 1
+    int 21h   
+    
+    lea dx, quebra_lin 
+    mov ah, 9
+    int 21h              ; quebra de linha
+    
+                                          
+                                          
+                                          
 start: 
-    in AL, 125       ; Le o valor do endereco I/O 125 (temperatura) 
-    push AX 
-    push AX       
-    call PRINT_DECIMAL
+    
+    mov ah, 0
+    
+    in al, 125       ; le o valor do endereco i/o 125 (temperatura) 
+    push ax 
+    push ax       
+    call print_decimal_3d
     
     lea dx, ce 
     mov ah, 9
-    int 21h              ; Imprime " C"
-    
-    lea dx, quebra_lin 
-    mov ah, 9
-    int 21h              ; Quebra de linha
+    int 21h              ; imprime " c"
   
-    pop AX 
-    call CONVERTE   
-    call PRINT_DECIMAL 
+    pop ax 
+    call converte   
+    call print_decimal_3d 
     
     lea dx, fa 
     mov ah, 9
-    int 21h              ; Imprime " F"
+    int 21h              ; imprime " f"
     
-    lea dx, quebra_lin 
-    mov ah, 9
-    int 21h              ; Quebra de linha
-
-    pop AX
-    cmp AL, temp_min      ; Compara a temperatura com 22
-    jl low         ; Se temperatura < 22, vai para "low"
-    cmp AL, temp_max      ; Se 22 <= temperatura <= 55, continua
+    mov ah, 2
+    
+    mov dl, 0x0D
+    
+    int 21h
+    
+    pop ax
+    cmp al, 22      ; compara a temperatura com 22
+    jl low         ; se temperatura < 22, vai para "low"
+    cmp al, 55      ; se 22 <= temperatura <= 55, continua
     jle ok    
     jg high       
 
 low:      
-    mov AL, 1     
-    out 127, AL   ; Liga o queimador (aumenta a temperatura)
+    mov al, 1     
+    out 127, al   ; liga o queimador (aumenta a temperatura)
     jmp ok        
 
 high:    
-    mov AL, 0 
-    out 127, AL   ; Desliga o queimador (diminui a temperatura)
+    mov al, 0 
+    out 127, al   ; desliga o queimador (diminui a temperatura)
 
 ok: 
     jmp start 
 
-;--------------------------------------------------------------
-; Função PRINT_DECIMAL
-; Entrada: AX contém o número decimal de 3 dígitos a ser exibido
-;--------------------------------------------------------------
-PRINT_DECIMAL PROC
-    PUSH AX
-    PUSH BX
-    PUSH CX
-    PUSH DX
 
-    MOV CX, 10         ; Base 10
-    MOV BX, 0          ; Contador de dígitos armazenados
+print_decimal_3d:
+    push ax
+    push bx
+    push cx
+    push dx
 
-CONVERT_LOOP:
-    MOV DX, 0          ; Limpa DX antes da divisão
-    DIV CX             ; AX / 10, resultado em AX, resto em DX
-    ADD DL, '0'        ; Converte número para caractere ASCII
-    PUSH DX            ; Armazena o caractere na pilha
-    INC BX             ; Incrementa contador de dígitos
-    TEST AX, AX        ; Verifica se AX é zero
-    JNZ CONVERT_LOOP   ; Se não for zero, continua dividindo
+    mov cx, 10         ; base 10
+    mov bx, 0          ; contador de digitos armazenados
 
-PRINT_LOOP:
-    POP DX             ; Recupera dígito convertido
-    MOV AH, 02H
-    INT 21H            ; Imprime caractere
-    DEC BX             ; Decrementa contador de caracteres
-    JNZ PRINT_LOOP     ; Continua imprimindo até esvaziar a pilha
+convert_loop:
+    mov dx, 0          ; limpa dx antes da divisao
+    div cx             ; ax / 10, resultado em ax, resto em dx
+    add dl, '0'        ; converte numero para caractere ascii
+    push dx            ; armazena o caractere na pilha
+    inc bx             ; incrementa contador de digitos
+    test ax, ax        ; verifica se ax e zero
+    jnz convert_loop   ; se nao for zero, continua dividindo
 
-    POP DX
-    POP CX
-    POP BX
-    POP AX
-    RET
-PRINT_DECIMAL ENDP  
+print_loop:
+    pop dx             ; recupera digito convertido
+    mov ah, 02h
+    int 21h            ; imprime caractere
+    dec bx             ; decrementa contador de caracteres
+    jnz print_loop     ; continua imprimindo ate esvaziar a pilha
 
-;--------------------------------------------------------------
-; Função CONVERTE (Converte Celsius para Fahrenheit)
-; Entrada: AX contém a temperatura em Celsius
-; Saída: AX contém a temperatura em Fahrenheit
-; Fórmula: °F = (°C * 9 / 5) + 32
-;--------------------------------------------------------------
-CONVERTE PROC
-    PUSH BX
-    PUSH CX
-    PUSH DX
+    pop dx
+    pop cx
+    pop bx
+    pop ax
+    ret             
+
+
+converte:
+    push bx
+    push cx
+    push dx
     
-    MOV AH, 0      
-    MOV BX, 9      
-    MUL BX         ; AX = AX * 9
+    mov ah, 0      
+    mov bx, 9      
+    mul bx         ; ax = ax * 9
     
-    MOV BX, 5      
-    DIV BX         ; AX = AX / 5
+    mov bx, 5      
+    div bx         ; ax = ax / 5
     
-    ADD AL, 32     ; AX = AX + 32
+    add al, 32     ; ax = ax + 32
     
-    POP DX
-    POP CX
-    POP BX
-    RET    
-CONVERTE ENDP
+    pop dx
+    pop cx
+    pop bx
+    ret    
+
+
+le_4digitos: 
+
+    ; le 4 digitos do teclado e joga em ax    
+    
+    lea si, leitura         ; carrega o EA(effective adress) endereco do vec1 em SI(registrador de indexacao)
+    
+    mov ah, 1
+    int 21h 
+    
+    sub al, 48 
+    
+    mov [si], al 
+    
+    inc si       
+    
+    mov ah, 1
+    int 21h 
+    
+    sub al, 48
+    
+    mov [si], al 
+    
+    inc si  
+    
+    mov ah, 1
+    int 21h 
+    
+    sub al, 48  
+    
+    mov [si], al  
+    
+    inc si       
+    
+    mov ah, 1
+    int 21h 
+    
+    sub al, 48
+    
+    mov [si], al   
+    
+    ; armazena o resultado em [si]:[si+4]
+    
+                                     
+       
+    ret
+
+    
